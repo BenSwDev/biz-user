@@ -3,40 +3,40 @@
   "sections": [
     {
       "title": "הקדמה",
-      "content": "הקובץ ccard.php מציג מסך לבדיקה טכנית של כרטיסי אשראי (Card Test), באמצעות iframe שמופנה אל ספק הסליקה. תוצאות הבדיקה מאפשרות לוודא את תקינות הכרטיס."
+      "content": "הקובץ ccard.php מציג מסך לבדיקה טכנית של כרטיסי אשראי (Card Test) באמצעות iframe שמופנה אל ספק הסליקה החיצוני. הבדיקה מתבצעת למעשה אצל ספק הסליקה עצמו, ולאחריה ניתן לאמת את תקינות הכרטיס. במקרה של שגיאה או היעדר מסוף, המשתמש מופנה ל־error_frame.php, המציג הודעת שגיאה מתאימה."
     },
     {
       "title": "הקבצים הרלוונטיים לצורך ccard",
-      "content": "<ul>\n<li><code>ccard.php</code> – עמוד בדיקת כרטיס אשראי, מייצר iFrame דרך <code>$client->initFrameCardTest()</code> או מפנה ל־<code>error_frame.php</code> במקרה חריג.</li>\n</ul>"
+      "content": "<ul>\n<li><code>ccard.php</code> – קובץ העמוד הראשי שבו בוצעה הסריקה המלאה. בקובץ זה:<br>\n1. נבדק האם למשתמש קיים מסוף (<code>Terminal::hasTerminal($_CURRENT_USER->active_site())</code>).<br>\n2. אם המסוף קיים ואינו \"max\" והמשתמש בעל אתר יחיד (<code>$_CURRENT_USER->single_site</code>), ייטען <code>Terminal::bySite($_CURRENT_USER->active_site())</code>; אחרת, ייטען <code>YaadPay::defaultTerminal()</code>.<br>\n3. מופעל <code>initFrameCardTest()</code> ליצירת URL לבדיקה, המוצג בתוך iframe.<br>\n4. במקרה של שגיאה (Exception), מתבצעת הפניה ל־<code>error_frame.php</code> עם הודעת שגיאה (<code>?error=message</code>).</li>\n<li><code>error_frame.php</code> – עמוד שגיאה המציג הודעה (מפרמטר <code>error</code> ב־GET). אם הפרמטר לא קיים, מוצגת ברירת מחדל \"Oops... some error happened !\".</li>\n</ul>"
     },
     {
-      "title": "קבצים נוספים (לפי הקוד)",
-      "content": "<ul>\n<li><code>Terminal</code> – לפי הקוד, <code>Terminal::hasTerminal()</code> ו־<code>Terminal::bySite()</code> בודקים אם למשתמש יש מסוף ספציפי. אם לא, נלקח <code>YaadPay::defaultTerminal()</code>.</li>\n<li><code>Exception</code> – טיפול בשגיאות ובמקרה של כשל, מפנה ל־<code>error_frame.php</code> עם הודעת שגיאה.</li>\n</ul>"
+      "title": "קבצים שלא נבדקו",
+      "content": "<ul>\n<li><code>Terminal</code> – מכיל פונקציות סטטיות כגון <code>hasTerminal()</code>, <code>bySite()</code>; לא סופק במלואו.</li>\n<li><code>YaadPay</code> – מכיל כנראה את <code>defaultTerminal()</code> ואת <code>initFrameCardTest()</code>; לא סופק במלואו.</li>\n</ul>"
     },
     {
       "title": "תרחישים כוללים בעמוד ccard",
       "subSections": [
         {
-          "title": "תרחיש 1: טעינת העמוד כאשר למשתמש יש מסוף",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1.1</td>\n<td>המשתמש נכנס ל־URL של ccard.php, מצפה לבצע בדיקת כרטיס אשראי.</td>\n<td>1. הקוד בודק <code>Terminal::hasTerminal()</code> מול האתר הפעיל (<code>$_CURRENT_USER->active_site()</code>).<br>2. אם קיים מסוף מתאים, מופעל <code>$client->initFrameCardTest()</code> ליצירת URL לבדיקה.</td>\n</tr>\n<tr>\n<td>1.2</td>\n<td>רואה הודעה כי סכום הסליקה יוחזר תוך 3 ימי עסקים, ומוצג iframe שבו נדרש להזין פרטי הכרטיס לבדיקה.</td>\n<td>1. <code>&lt;iframe src=\"$link['url']\"</code> נטען; הקוד מציג כותרת “בדיקת תקינות כרטיס אשראי”.<br>2. בממשק הספק (iframe) מתבצעת בפועל בדיקת הכרטיס (הפעולה אינה בקובץ זה). </td>\n</tr>\n</tbody>\n</table>"
+          "title": "תרחיש 1: טעינת העמוד כאשר למשתמש יש מסוף תקין",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1.1</td>\n<td>המשתמש נכנס ל-<code>ccard.php</code> לבדיקת כרטיס אשראי.</td>\n<td>1. הקוד בודק <code>Terminal::hasTerminal($_CURRENT_USER->active_site())</code>.<br>2. אם קיים מסוף שאינו \"max\" והמשתמש בעל אתר יחיד, ייטען <code>Terminal::bySite()</code>; אחרת, <code>YaadPay::defaultTerminal()</code>.<br>3. נקרא <code>initFrameCardTest()</code> ליצירת <code>URL</code> הבדיקה.<br>4. iframe נטען בכתובת שהוחזרה.</td>\n</tr>\n<tr>\n<td>1.2</td>\n<td>משתמש רואה הודעה על החזר תוך 3 ימי עסקים ו-iframe לבדיקה (ספק הסליקה).</td>\n<td>הבדיקה בפועל מתבצעת אצל ספק הסליקה, מחוץ לקוד שלנו.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
-          "title": "תרחיש 2: אין מסוף פעיל או שגיאה",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>2.1</td>\n<td>המשתמש נכנס לדף, אך בפועל אין לו מסוף משויך או מתרחשת שגיאה.</td>\n<td>1. נחסם ב־try/catch – אם קיים Exception, מופנה ל־<code>error_frame.php</code> עם פרמטר <code>?error=message</code>.<br>2. iframe יציג עמוד שגיאה במקום בדיקת הכרטיס.</td>\n</tr>\n</tbody>\n</table>"
+          "title": "תרחיש 2: אין מסוף פעיל או התרחשה שגיאה",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>2.1</td>\n<td>המשתמש נכנס ל-<code>ccard.php</code>, אך אין לו מסוף או התרחשה שגיאה.</td>\n<td>1. בבלוק try/catch, במקרה Exception, מתבצעת הפניה ל-<code>error_frame.php?error=message</code>.<br>2. iframe מציג את <code>error_frame.php</code>, המציג את ההודעה מהפרמטר או הודעת ברירת מחדל.</td>\n</tr>\n</tbody>\n</table>"
         }
       ]
     },
     {
       "title": "קבצים שנבדקו לצורך ccard",
-      "content": "<ul>\n<li><code>ccard.php</code> – קובץ העמוד.</li>\n</ul>"
+      "content": "<ul>\n<li><code>ccard.php</code> – נסרק במלואו.</li>\n<li><code>error_frame.php</code> – נסרק במלואו.</li>\n</ul>"
     },
     {
-      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
-      "content": "<ul>\n<li><code>Terminal</code> ו־<code>YaadPay</code> – לא סופקו במלואם, רק מופיעים בקריאות <code>Terminal::hasTerminal()</code>, <code>Terminal::bySite()</code> וכו’.</li>\n<li><code>error_frame.php</code> – לא סופק, אך הקוד מפנה אליו במקרה של שגיאה בבדיקת הכרטיס.</li>\n</ul>"
+      "title": "קבצים חסרים להשלמת המסמך",
+      "content": "<ul>\n<li><code>Terminal</code> – נדרש לפרטי מימוש של <code>hasTerminal()</code> ו-<code>bySite()</code>.</li>\n<li><code>YaadPay</code> – נדרש לפרטי מימוש של <code>defaultTerminal()</code> ו-<code>initFrameCardTest()</code>.</li>\n</ul>"
     },
     {
       "title": "סיכום (ccard)",
-      "content": "<ul>\n<li><strong>ccard.php</strong> מציג iFrame לבדיקת תקינות כרטיס אשראי באמצעות ספק הסליקה. במידה ויש מסוף – מוזן URL בדיקה, ובמקרה של שגיאה – מופנה לעמוד error_frame.</li>\n<li>מסך זה שימושי עבור בדיקה טכנית של הכרטיס לפני סליקה מלאה.</li>\n</ul>"
+      "content": "<ul>\n<li><strong>ccard.php</strong> מציג iframe לבדיקת כרטיס אשראי דרך ספק סליקה חיצוני. בתרחיש תקין נטען URL הספק, ובתרחיש כשל נטען <code>error_frame.php</code>.</li>\n<li><strong>error_frame.php</strong> מציג הודעת שגיאה בהתאם לפרמטר <code>?error=message</code>, או הודעת ברירת מחדל אם הפרמטר אינו קיים.</li>\n<li>מסך זה שימושי לבדיקת כרטיס אשראי לפני סליקה מלאה, תוך מתן הסבר על החזר כספי אפשרי תוך 3 ימי עסקים.</li>\n</ul>"
     }
   ]
 }
