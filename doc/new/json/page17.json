@@ -1,0 +1,43 @@
+{
+  "pageTitle": "17. מחירים (prices.php)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "קובץ prices.php מציג דף שמאפשר לעבור בין מספר מתחמים (sites) באמצעות כרטיסיות (tabs), ולטעון בתוך iframe את הגדרת המחירים הרלוונטית (לכל אתר)."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך prices",
+      "content": "<ul>\n<li><code>prices.php</code> – מכיל את \"tabs\" (רשימת מתחמים) ו־iframe (#prices) שמפנה ל־prices.php?asite=... (מעין טעינה פנימית).</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>changeTab(siteid)</code> – פונקציית JavaScript שמחליפה את src של ה־iframe בהתבסס על בחירת לשונית.</li>\n<li>אין כאן לוגיקת CRUD (Insert / Update) שמוצגת. נראה שהקובץ רק מנווט ל־?asite=...</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד prices",
+      "content": "העמוד עיקרו – לבחור מתחם מרשימת הלשוניות, ואז iframe טוען תצוגת מחירים:",
+      "subSections": [
+        {
+          "title": "תרחיש 1: בחירת לשונית מתחם",
+          "content": "<ol>\n<li>משתמש לוחץ על טאב (\"מחירים של מתחם X\").</li>\n<li>קוד JS מפעיל <code>changeTab(X)</code> → מעדכן <code>iframe#prices</code> ל־<code>prices.php?asite=X</code>.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 2: עריכת מחירים באותו iframe",
+          "content": "לא מוצג בהרחבה. כנראה אותה כתובת <code>prices.php?asite=...&amp;edit=1</code> וכו’."
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך prices",
+      "content": "<ul>\n<li><code>prices.php</code> – העיקרי שכולל את ה־tabs וה־iframe.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li>לא רואים את תוכן <code>prices.php?asite=...</code> (כנראה קובץ פנימי שמנהל מחירים).</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (prices)",
+      "content": "עמוד 'מחירים' נותן ממשק בחירה בין מתחמים רבים, וב־iframe נטען דף פנימי לעריכת/צפייה במחירים של אותו מתחם."
+    }
+  ]
+}

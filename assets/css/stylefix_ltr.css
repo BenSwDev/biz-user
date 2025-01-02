@@ -1,0 +1,9 @@
+body.ltr .create_order .container{transform: translateY(-50%) translate(-50%);}
+body.ltr .giftpop .container{transform: translateY(-50%) translate(-50%);}		
+body.ltr .cuponpop .container{transform: translateY(-50%) translate(-50%);}		
+body.ltr .fast-find .inputWrap .submit{transform: translateY(-50%) rotate(180deg);}		
+body.ltr td.control div.pay.refunded, .bottom-btns div.pay.refunded {word-break: break-all;line-height: 1;}
+body.ltr div#add_date {font-size: 16px;}
+body.ltr .create_order .inputWrap .radios div label {word-break: break-all;}
+body.ltr .treats .items>div::before{ transform: scaleX(-1) rotate(45deg)  translateY(-50%);}
+body.ltr #couponTypes > li.show .showTheseCoupons {padding: 5px;}

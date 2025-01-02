@@ -1,0 +1,47 @@
+{
+  "pageTitle": "19. חוות דעת (reviews.php)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "קובץ reviews.php מציג רשימת חוות דעת (reviews) מהטבלה `reviews`, עם אפשרות לחפש לפי תאריך, מילת חיפוש חופשית, ולהוסיף תגובה (ownComment) לביקורת."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך reviews",
+      "content": "<ul>\n<li><code>reviews.php</code> – הקובץ העיקרי בעמוד 19, מציג חוות דעת, מאפשר חיפוש.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>ajax_global.php?act=ownComment</code> – לטיפול ב'תגובה' שהמנהל כותב.</li>\n<li><code>files.src</code> – אם מצורף מסמך/אסמכתא לחוות הדעת.</li>\n<li>יש כפתור 'שליחת חו\"ד' (plusWrapper) – למעשה שולח לינק למילוי חוות דעת.</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד reviews",
+      "content": "",
+      "subSections": [
+        {
+          "title": "תרחיש 1: חיפוש חוות דעת",
+          "content": "<ol>\n<li>משתמש ממלא from, to, free text, לוחץ 'חפש'.</li>\n<li>הקוד מרכיב WHERE ומתייחס ל־timeFrom / timeTill + \"LIKE\" ב־h.title/h.text.</li>\n<li>מציג רשימת reviews, ממוינת לפי created DESC.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 2: הוספת תגובה (ownComment)",
+          "content": "<ol>\n<li>ליד כל חוות דעת רואים 'הוסף תגובה' או 'ערוך תגובה'.</li>\n<li>נפתח פופ־אפ (#addcomm), המשתמש מקליד טקסט ולוחץ 'שמירה'.</li>\n<li>נשלח AJAX ל־<code>ajax_global.php?act=ownComment</code> שמעדכן השדה ownComment ב־DB.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 3: הצגת מסמך / הזמנה מקושרת",
+          "content": "<ol>\n<li>אם review.document קיים, כפתור 'הצג אסמכתא' מציג קובץ (openDoc(...)).</li>\n<li>אם orderID קיים, כפתור 'הצג הזמנה' מפנה ל־window.openFoo.call(...)</li>\n</ol>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך reviews",
+      "content": "<ul>\n<li><code>reviews.php</code></li>\n<li><code>ajax_global.php</code> עבור שמירת ownComment</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li>תוכן מלא של <code>ajax_global.php</code></li>\n<li>auth.php – הרשאות</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (reviews)",
+      "content": "זהו עמוד להצגת חוות דעת שהתקבלו באתר, עם אפשרות חיפוש ותגובה ניהולית (ownComment). בנוסף ניתן לשלוח קישור ללקוח למילוי חוות דעת חדשה."
+    }
+  ]
+}

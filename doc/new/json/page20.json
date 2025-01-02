@@ -1,0 +1,43 @@
+{
+  "pageTitle": "20. סטטיסטיקות (stats.php)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "קובץ stats.php אוסף נתונים מטבלאות כגון maskyooCalls, contactForm, contact_whatsapp, sites_clicks כדי להציג ספירת לידים ופעולות באתר."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך stats",
+      "content": "<ul>\n<li><code>stats.php</code> – מציג חיפוש לפי תאריכים, ואח\"כ טבלה שמסכמת שיחות מסקיו, וואטסאפ, טופס יצירת קשר, וכו’.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>contactForm</code>, <code>contact_whatsapp</code>, <code>maskyooCalls</code> – טבלאות DB (לא קבצי PHP).</li>\n<li><code>require __DIR__ . '/../partials/stats/' . $_GET['type'] . '.php'</code> – אם $_GET['type'] מוזן (לדוג' whatsappstart, maskyoocall...), נטען קובץ משנה (לא סופק).</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד stats",
+      "content": "",
+      "subSections": [
+        {
+          "title": "תרחיש 1: צפייה בסטטיסטיקות כלליות",
+          "content": "<ol>\n<li>משתמש נכנס ל־?page=stats, ממלא תאריכים from/to.</li>\n<li>הקוד מפעיל WHERE על maskyooCalls.start_call, contactForm.created וכו'.</li>\n<li>מוצגת טבלת סיכום: \"התחלת שיחת וואטסאפ\" (conWhatsapp), \"שיחות מסקיו\" (maskyoo), \"לידים יצירת קשר\" (conForm).</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 2: הצגת נתונים מפורטים (type=...)",
+          "content": "<ol>\n<li>אם משתמש בוחר ב־<select> \"סוג המידע\" (maskyoocall / contacts / whatsappstart), נטען detailed-lists/partials/stats/(type).php.</li>\n<li>שם רואים פירוט נוסף (רשימה מפורטת של כל השיחות, למשל).</li>\n</ol>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך stats",
+      "content": "<ul>\n<li><code>stats.php</code></li>\n<li>לא סופקו partials/stats/*.php בפועל.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li>partials/stats/ (whatsappstart, maskyoocall וכו’)</li>\n<li>auth.php – הרשאות</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (stats)",
+      "content": "עמוד stats מרכז נתונים על אינטראקציות לקוחות (שיחות, וואטסאפ, לידים), עם אפשרות חתכים לפי תאריך ופריסה מפורטת לפי סוג פעילות."
+    }
+  ]
+}

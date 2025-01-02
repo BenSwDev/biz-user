@@ -1,0 +1,42 @@
+{
+  "pageTitle": "26. הצהרות בריאות (userType=2)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "הקובץ healthStatements.php מציג הצהרות בריאות שהלקוחות מילאו. כך שמשתמש userType=2 (לדוגמה מטפל/ספק) יכול לבדוק את הצהרת הבריאות לפני הטיפול, או לחפש הצהרות ללקוחות מסוימים."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך הצהרות בריאות (userType=2)",
+      "content": "<ul>\n<li><code>healthStatements.php</code> – מסך לניהול וחיפוש הצהרות בריאות.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>health_declare</code> – טבלת DB ובה פרטי ההצהרה (declareID, siteID, time_create, negative וכו').</li>\n<li><code>orders</code> – לעיתים משייכים הצהרה להזמנה (orderID).</li>\n<li><code>ajax_searchOrder.php</code> – מאפשר לשנות את שיוך ההצהרה להזמנה אחרת (act='changeOrder').</li>\n<li>יש גם רמיזות ל־<code>signature2.php</code> ולמנגנון שתומך בהצגת ההזמנה המקורית.</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד הצהרות בריאות",
+      "subSections": [
+        {
+          "title": "תרחיש 1: חיפוש הצהרות",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1.1</td>\n<td>ממלא תאריכי חיפוש (מתאריך / עד תאריך), חיפוש חופשי, וסוג תאריך (תאריך הצהרה, יצירת הזמנה, או תאריך טיפול).</td>\n<td>1. ה־<code>WHERE</code> ב־<code>healthStatements.php</code> מושפע מ־<code>$_GET['searchtype']</code> (0=תאריך הצהרה, 1=תאריך יצירת הזמנה, 2=תאריך טיפול).<br>2. מופיעה רשימת הצהרות, לכל אחת פרטי <code>clientName</code>, טלפון, הערה על “בריאות תקינה” או “X חריגות”.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 2: שיוך הצהרה להזמנה אחרת",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>2.1</td>\n<td>לוחץ על כפתור “שיוך להזמנה” ליד הצהרה שלא משוייכת, מחפש לפי שם/טלפון, ובוחר בהזמנה.</td>\n<td>1. נפתח popup <code>change_order_pop</code>.<br>2. נשלחת בקשת <code>ajax_searchOrder.php</code> (<code>act='changeOrder'</code>), עדכון <code>health_declare.orderID</code> לערך חדש.<br>3. בעת הצלחה, מציג התראה (Swal.fire) וניתן לרענן הצהרות.</td>\n</tr>\n</tbody>\n</table>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך הצהרות בריאות",
+      "content": "<ul>\n<li><code>healthStatements.php</code></li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li><code>ajax_searchOrder.php</code> – לטיפול בפעולות של שיוך הצהרת בריאות להזמנה.</li>\n<li><code>health_declare</code> – מבנה טבלה מלא לא סופק.</li>\n<li>קוד מלא של <code>signature2.php</code> או <code>orders</code> לא סופק אך נרמז כיצד הם משתלבים.</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (הצהרות בריאות - userType=2)",
+      "content": "<ul>\n<li><strong>healthStatements.php</strong> מאפשר חיפוש וניהול הצהרות בריאות, כולל קישור להזמנה המקורית או שיוך להזמנה חדשה.</li>\n<li>משתמש userType=2 עשוי לראות רק הצהרות במתחם שלו, ולעיתים עם הגבלת גישה (בדיקת <code>therapistID</code> באותו מתחם).</li>\n</ul>"
+    }
+  ]
+}

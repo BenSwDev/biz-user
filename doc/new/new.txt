@@ -1,0 +1,2485 @@
+
+========================================
+File Path: C:\Users\Ben Swissa\Desktop\backup\Employee - Spa Plus\user\pages\agreements.php
+----------------------------------------
+<?php
+/**
+ * @var TfusaBaseUser $_CURRENT_USER
+ */
+if (!$_CURRENT_USER->select_site()){
+    $_CURRENT_USER->select_site($_CURRENT_USER->active_site());
+    echo '<script>$(function(){$(".sites-select select").val(' , $_CURRENT_USER->active_site() , ');});</script>';
+}
+
+$asid = $_CURRENT_USER->active_site() ?: 0;
+
+$list = $_CURRENT_USER->sites();
+
+if ('POST' == $_SERVER['REQUEST_METHOD']){
+    
+	$asid = typemap($_POST['asid'], 'int');
+    if ($asid && !$_CURRENT_USER->has($asid)){
+        echo 'Access denied';
+        return;
+    }
+
+    $data = typemap($_POST, [       
+        'agreement2'   => 'text',
+        'agreement3'   => 'text',
+        'agreement4'   => 'text',
+        'agreement_rent'  => 'text',
+        'defaultAgr'   => 'int'
+    ]);
+
+    if ($asid && in_array($asid, $list)){
+        udb::update('sites_langs',$data, "domainID=1 AND langID=1 AND siteID = " . $asid);
+        Translation::save_row('sites', $asid, $data, 1, 1);
+?>
+	<script type="text/javascript">
+		window.location.href = window.location.href;
+	</script>
+<?php
+        return;
+    }
+}
+
+//$asid = intval($_GET['asid'])?intval($_GET['asid']):$_CURRENT_USER->active_site();
+//
+//if (!$asid || !in_array($asid, $list))
+//    $asid = reset($list);
+
+$que = "SELECT 	agreement1,	agreement2,	agreement3,agreement4, agreement_rent, defaultAgr FROM `sites_langs` WHERE domainID = 1 AND langID = 1 AND siteID = " . $asid;
+$agreements = udb::single_row($que);
+
+//$sname = udb::key_value("SELECT `siteID`, `siteName` FROM `sites` WHERE `siteID` IN (" . implode(',', $list) . ")");
+//include "partials/settings_menu.php"; 
+?>
+<section class="orders">
+	<div class="last-orders">
+		<div class="title">הסכמים</div>
+		<form method="post" class="agreements">
+		<input name="asid" value="<?=$asid?>" type="hidden">
+            <!-- select name="asid" title="מתחם" onchange="window.location.href='?page=agreements&asite='+this.value">
+<?php
+//    foreach($list as $sid)
+//        echo '<option value="' , $sid , '" ' , ($sid == $asid ? 'selected' : '') , '>' , $sname[$sid] , '</option>';
+?>
+            </select -->
+			<div class="txtAreaWrap">
+				<div class="ttl">הסכם 1</div>
+				<div class="textEditorShow"><?=$agreements['agreement1']?></div><!-- name="agreement1" -->
+				<div class="radioWrap">
+					<input type="radio"  name="defaultAgr" value="1" id="defaultAgr1" 
+					<?=($agreements['defaultAgr']==1 || !$agreements['defaultAgr']?"checked":"")?>>
+					<label for="defaultAgr1">בחר הסכם זה כברירת מחדל</label>
+				</div>
+			</div>
+			<div class="txtAreaWrap">
+				<div class="ttl">הסכם 2</div>
+				<textarea name="agreement2" class="textEditorX"><?=$agreements['agreement2']?></textarea>
+				<div class="radioWrap">
+					<input type="radio"  name="defaultAgr" value="2" id="defaultAgr2" <?=($agreements['defaultAgr']==2?"checked":"")?>>
+					<label for="defaultAgr2">בחר הסכם זה כברירת מחדל</label>
+				</div>
+			</div>
+			<div class="txtAreaWrap">
+				<div class="ttl">הסכם 3</div>
+				<textarea name="agreement3" class="textEditorX"><?=$agreements['agreement3']?></textarea>
+				<div class="radioWrap">
+					<input type="radio"  name="defaultAgr" value="3" id="defaultAgr3" <?=($agreements['defaultAgr']==3?"checked":"")?>>
+					<label for="defaultAgr3">בחר הסכם זה כברירת מחדל</label>
+				</div>
+			</div>
+			<div class="txtAreaWrap">
+				<div class="ttl">הסכם 4</div>
+				<textarea name="agreement4" class="textEditorX"><?=$agreements['agreement4']?></textarea>
+				<div class="radioWrap">
+					<input type="radio"  name="defaultAgr" value="4" id="defaultAgr4" <?=($agreements['defaultAgr']==4?"checked":"")?>>
+					<label for="defaultAgr4">בחר הסכם זה כברירת מחדל</label>
+				</div>
+			</div>
+			<div class="txtAreaWrap">
+				<div class="ttl">הסכם שכירות</div>
+				<textarea name="agreement_rent" class="textEditorX"><?=$agreements['agreement_rent']?></textarea>
+				<div class="radioWrap">
+					<input type="radio"  name="defaultAgr" value="10" id="defaultAgr10" <?=($agreements['defaultAgr']==10?"checked":"")?>>
+					<label for="defaultAgr10">בחר הסכם זה כברירת מחדל</label>
+				</div>
+			</div>
+			<input type="submit" value="עדכן הסכם">
+		</form>
+	</div>
+</section>
+
+========================================
+File Path: C:\Users\Ben Swissa\Desktop\backup\Employee - Spa Plus\user\pages\calendar_ver2.php
+----------------------------------------
+<?php
+/**
+ * @var TfusaBaseUser $_CURRENT_USER
+ */
+if ($_CURRENT_USER->select_site())
+    echo '<script>$(function(){$("a[data-all-site=\'' . $_CURRENT_USER->select_site() . '\']").click();});</script>';
+
+$monthView = $_GET['monthView'];
+
+function findHoliday($date){
+    global $holidays;
+
+    $data = [];
+
+    foreach($holidays as $day)
+        if ($day['dateStart'] <= $date && $day['dateEnd'] >= $date)
+            $data[] = '<div>' . $day['holidayName'] . '</div>';
+
+    return implode('', $data);
+}
+
+function quot($a){
+    return str_replace('"', '\"', $a);
+}
+
+	if(!$_GET['date'] || date("m/Y") == date("m/Y",$_GET['date'])){
+		$date = date("Y/m/d");
+
+	}else{
+		if(typemap(implode('-',array_reverse(explode('/',trim($_GET['date'])))),"date")){
+			$date = implode('/',array_reverse(explode('/',trim($_GET['date']))));
+		}else{
+			//echo "תאריך שגוי";
+			$date = date("Y/m/d");
+		}
+	}
+	$dateMonth =  substr($date,0,-2)."01";
+	//echo $dateMonth;
+
+	$endMonthDay = date("t",date(strtotime($date)));
+	$curMonthDate = date("m",strtotime($date));
+	$curYearDate = date("Y",strtotime($date));
+
+	$dayNameShort = array ("א","ב","ג","ד","ה","ו","ש");
+	$dayNameMonth = array ("א","ב","ג","ד","ה","שישי","שבת");
+	$dayName = array ("ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת");
+	$monthNames = array("ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני","יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר");
+
+	$monthStart = date('Y-m-01',strtotime($date));
+	$monthEnd = date('Y-m-t',strtotime($date));
+	if($monthView){
+		$firstDay = date('Y-m-d',  strtotime($monthStart." -".date('w',strtotime($monthStart))." day"));
+		$lastDay = date('Y-m-d',  strtotime($monthEnd." +".(6 - date('w',strtotime($monthEnd)))." day"));
+
+	}else{
+
+		$firstDay = $monthStart;
+		$lastDay = $monthEnd;
+	}
+	$insertDay = $firstDay;
+	$key = 1;
+	$showDays = array();
+	while(strtotime($insertDay)<=strtotime($lastDay)){
+		$showDays[$key] = $insertDay;
+		$key++;
+		$insertDay = date('Y-m-d', strtotime($insertDay. "+1 day"));
+	}
+
+
+
+	$que = "SELECT `orders`.*, `orderUnits`.`unitID`
+	FROM `orders` 
+	INNER JOIN `orderUnits` USING(`orderID`)
+	WHERE siteID IN (" . $_CURRENT_USER->sites(true) . ") AND `orders`.`status`=1
+	    AND timeFrom <= '".$lastDay." 23:59:59' AND timeUntil >= '".$firstDay." 00:00:00'
+	";
+
+	$monthOrders = udb::full_list($que);
+	//print_r($monthOrders);
+
+    $sname = udb::key_value("SELECT `siteID`, `siteName` FROM `sites` WHERE `siteID` IN (" . $_CURRENT_USER->sites(true) . ")");
+
+//    $que = "(SELECT `dateStart`, `dateEnd`, `holidayName` FROM `holidays` WHERE '" . $monthStart . "' <= `dateEnd` AND '" . $monthEnd . "' >= `dateStart` AND `active` = 1)
+//            UNION
+//            (SELECT `dateStart`, `dateEnd`, `notHolidayName` FROM `not_holidays` WHERE '" . $monthStart . "' <= `dateEnd` AND '" . $monthEnd . "' >= `dateStart` AND `active` = 1)
+//            ORDER BY `dateStart`";
+    $que = "SELECT `dateStart`, `dateEnd`, `notHolidayName` AS `holidayName` FROM `not_holidays` WHERE '" . $firstDay . "' <= `dateEnd` AND '" . $lastDay . "' >= `dateStart` AND `active` = 1 ORDER BY `dateStart`";
+    $holidays = udb::single_list($que);
+
+//        $que = "SELECT `rooms_units`.`unitID`,`rooms_units`.`unitName`,`rooms`.`roomName`, rooms.active, rooms.siteID, rooms.roomID
+//            FROM `rooms_units`
+//            INNER JOIN `rooms` ON (`rooms`.`roomID` = `rooms_units`.`roomID`)
+//            WHERE `rooms`.`siteID` IN (" . $_CURRENT_USER->sites(true) . ") AND rooms.active = 1
+//            ORDER BY rooms.showOrder";
+//        $crooms = udb::key_list($que, 'siteID');
+//        ksort($crooms, SORT_NUMERIC);
+
+
+
+    $que = "SELECT `rooms_units`.`unitID`,`rooms_units`.`unitName`,`rooms`.`roomName`, rooms_domains.active, rooms.siteID, rooms.roomID
+                FROM `rooms_units`
+                INNER JOIN `rooms_domains` ON (`rooms_domains`.`roomID` = `rooms_units`.`roomID` and rooms_domains.domainID=1)  
+                INNER JOIN `rooms` ON (`rooms`.`roomID` = `rooms_units`.`roomID`)
+                WHERE `rooms`.`siteID` IN (" . $_CURRENT_USER->sites(true) . ") AND  rooms_domains.active=1
+                ORDER BY `rooms`.`siteID` ASC,rooms.showOrder ASC";
+    $crooms = udb::key_list($que, 'siteID');
+    //ksort($crooms, SORT_NUMERIC);
+
+
+	//print_r($crooms);
+?>
+<link rel="stylesheet" href="<?=$_CURRENT_BASE?>assets/css/tfusa_ver2.css?v=<?=time()?>">
+<div class="popup unitSelect" id="unitSelect" >
+    <div class="popup_container">
+        <div class="close" onclick="$('#unitSelect').fadeOut('fast')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21" width="21" height="21"><path class="shp0" d="M1.3 1.3C1.8 0.9 2.5 0.9 2.9 1.3L11 9.4 19.1 1.3C19.5 0.9 20.2 0.9 20.7 1.3 21.1 1.8 21.1 2.5 20.7 2.9L12.6 11 20.7 19.1C21.1 19.5 21.1 20.2 20.7 20.7 20.4 20.9 20.2 21 19.9 21 19.6 21 19.3 20.9 19.1 20.7L11 12.6 2.9 20.7C2.7 20.9 2.4 21 2.1 21 1.8 21 1.5 20.9 1.3 20.7 0.9 20.2 0.9 19.5 1.3 19.1L9.4 11 1.3 2.9C0.9 2.5 0.9 1.8 1.3 1.3Z"></path></svg></div>
+		<div class="title">בחרו יחידה לתצוגה</div>
+		<div class="all-units">
+			<?if(count($crooms)>1){?>
+			<a style="border-color:#333" onclick="showunits('all',Array(0),$(this).html())">כל היחידות</a>
+			<div style="padding-top:10px;margin-bottom:10px;border-bottom:1px #333 solid"></div>
+			<?}
+			$roomNum=0;
+			foreach($crooms as $siteID => $rlist){
+				$siteRooms = array();
+				foreach($rlist as $room){
+					$siteRooms[]=$room['unitID'];
+					$roomType[$room["roomID"]][] = $room["unitID"];
+				}?>
+
+					<a style="margin-top:20px;border-color:#333" data-all-site="<?=$siteID?>" onclick="showunits('units',[<?=implode(",",$siteRooms)?>],$(this).html())">כל היחידות - <?=$sname[$siteID]?></a>
+					<div class="units">
+				<?
+				$roomIDs = 0;
+				foreach($rlist as $room) {
+					if(count($roomType[$room["roomID"]]) > 1){
+						if($roomIDs ==0){
+						?>
+						<a class="roomNameTitle" style="border-color:#0dabb6;margin-top:10px" onclick="showunits('units',[<?=implode(",",$roomType[$room["roomID"]])?>],$(this).html())"><?=$room['unitName']?> <span> - <?=count($roomType[$room["roomID"]])?> יחידות</span></a>
+						<div class="roomIDs">
+						<?
+						}$roomIDs ++;
+					}else{$roomIDs =0;}
+
+					$roomNum++;
+					$roomNumber[$room['unitID']] = $roomNum;
+					?>
+					<a onclick="showunits('unit',<?=$room['unitID']?>,$(this).html())"><i><?=$roomNum?></i><?=$room['unitName']?></a>
+					<?if(count($roomType[$room["roomID"]]) > 1 && $roomIDs ==count($roomType[$room["roomID"]])){
+						$roomIDs = 0;?>
+						</div>
+					<?}?>
+				<?}?>
+				</div>
+			<?}?>
+		</div>
+	</div>
+</div>
+<section id="n_tfusa" class="tfusa <?=$monthView? "month" : ""?>">
+	<div class='calendar-top cright'>
+		<?if(!$monthView){?>
+		<div class="settings" id="setview" style="display:">
+			<div class="view-set" onclick="toggleFlip()">סובב תצוגה</div>
+			<div class="time-set">
+				<div onclick="$('.tfusa').removeClass('wide');set_session('wide',0)">רגיל</div>
+				<div id="wideview" onclick="$('.tfusa').addClass('wide');set_session('wide',1)">רחב</div>
+			</div>
+		</div>
+		<?}?>
+		<div class="top-buttons">
+			<a href="?page=calendar_ver2&date=<?=date("d/m/Y",strtotime("-1 month",strtotime($dateMonth)))?>&monthView=<?=$monthView?>" class="prev">חודש קודם</a>
+			<div class="month-select">
+				<select id="monthselect" onchange="newload()">
+					<?
+
+					for($i= -12;$i<=24;$i++){?>
+					<option value="<?=$i!=0? date('d/m/Y', strtotime($i." months", strtotime($monthStart))): date('d/m/Y');?>" <?=$i==0? "selected" : ""?>>
+						<?=date('m - Y', strtotime($i." months", strtotime($monthStart)));?>
+					</option>
+				<?}?>
+				</select>
+				<?=$monthNames[date('n', strTotime($date))-1]?><br>
+				<?=date('m - Y', strTotime($date))?>
+			</div>
+			<a href="?page=calendar_ver2&date=<?=date("d/m/Y",strtotime("+1 month",strtotime($dateMonth)))?>&monthView=<?=$monthView?>" class="next">חודש הבא</a>
+		</div>
+	</div>
+	<div class='calendar-top cleft'>
+
+		<select id="monthview" onchange="newload()">
+			<option value="0" <?=$monthView? "" : "selected"?>>תצוגת רשימה</option>
+			<option value="1" <?=$monthView? "selected" : ""?>>תצוגה חודשית</option>
+			<option value="2" >תצוגה יומית</option>
+		</select>
+		<div id="showSelect" onclick="$('#unitSelect').fadeIn('fast')">כל היחידות</div>
+	</div>
+	<div class="days-table" id="days-table">
+		<div class="r-side">
+			<div class="top">
+				<div class="row month">
+					<span class="month-label"><span class="month-name"><?=$monthNames[date('n', strTotime($date))-1]?></span><span class="month-year"><?=$curYearDate?></span></span>
+					<div class="buttons">
+						<button class="prev">אחורה</button>
+						<button class="next">קדימה</button>
+					</div>
+				</div>
+			</div>
+			<div class="rooms">
+<?php
+    foreach($crooms as $siteID => $rlist){
+        foreach($rlist as $room) {
+?>
+				<div class="row<?=($room['active'] ? '' : ' inactive')?>" data-name="<?=outDb($room['unitName'])?>" data-uid="<?=$room['unitID']?>">
+					<div class="name"><?=outDb($room['unitName'])?></div>
+                    <div class="people adults"><?=$sname[$siteID]?></div>
+					<!-- div class="people kids">עד 6 ילדים</div> -->
+				</div>
+<?php
+        }
+    }
+
+?>
+			</div>
+		</div>
+		<div class="l-side">
+			<div class="days" id="days">
+
+<?php
+		if($monthView){
+			$wday = 0;
+			foreach($dayNameMonth as $day){ $wday++;?>
+				<div class="day <?=$wday>5? "weekend" : ""?>">
+					<a class="top">
+					<div class="row">
+						<span class="day-name"><?=$day?></span>
+					</div>
+					</a>
+				</div>
+			<?}
+
+		}else{?>
+				<div class="day last-month">
+					<div class="top">
+						<div class="row">
+							<div class="title">הזמנות מחודש קודם</div>
+						</div>
+					</div>
+				</div>
+		<?
+		for($i=1; $i<=count($showDays); $i++) {
+			$today = date('d/m/Y',strtotime($showDays[$i]));
+			$todayRev = date('Y-m-d',strtotime($showDays[$i]));?>
+				<div class="day <?=($today==date("d/m/Y"))?"today":""?> <?=(date("w",strtotime($todayRev))>4)?"weekend":""?>" data-date="<?=$today?>">
+					<a href="index.php?page=calendar2_ver2&date=<?=date("d/m/Y",strtotime($todayRev))?>" class="top">
+						<div class="row">
+							<div class="special_date" title="<?=strip_tags(findHoliday($todayRev))?>"><?=findHoliday($todayRev)?></div>
+							<span class="day-name"><?=$dayName[date('w', strTotime($todayRev))]?></span>
+							<span class="day-date" ><?=date("d/m/Y",strtotime($todayRev))?></span>
+						</div>
+					</a>
+
+				</div>
+			<?}
+		}?>
+		</div>
+<?php
+		if($monthView){?>
+		<div class="days">
+		<?
+
+		}else{?>
+
+			<div class="day last-month">
+				<div class="rooms">
+<?php
+
+			foreach($crooms as $siteID => $rlist){
+				foreach($rlist as $room) {
+		?>
+					<div class="row<?=($room['active'] ? '' : ' inactive')?>" data-date="<?=date("d/m/Y",strtotime("-1 day",strtotime($curYearDate."-".$curMonthDate."-01")))?>" data-name="<?=outDb($room['unitName'])?>" data-uid="<?=$room['unitID']?>"></div>
+		<?php
+				}
+			}
+
+?>
+
+				</div>
+			</div>
+<?php	}
+
+
+        for($i=1; $i<=count($showDays); $i++) {
+			$today = date('d/m/Y',strtotime($showDays[$i]));
+			$todayRev = date('Y-m-d',strtotime($showDays[$i]));
+?>
+
+			<div class="day <?=($today==date("d/m/Y"))?"today":""?> <?=(date("w",strtotime($todayRev))>4)?"weekend":""?>" data-date="<?=$today?>">
+				<?if($monthView){?><div class="daydate"><div><?=explode("-",$showDays[$i])[2]?></div><span><?=findHoliday($todayRev)?></span></div><?}?>
+				<div class="rooms">
+<?php
+            foreach($crooms as $siteID => $rlist){
+                foreach($rlist as $room) {
+?>
+					<div class="row<?=($room['active'] ? '' : ' inactive')?>" data-date="<?=$today?>" data-name="<?=outDb($room['unitName'])?>" data-uid="<?=$room['unitID']?>" data-num="<?=$roomNumber[$room['unitID']]?>">
+
+					</div>
+<?php
+                }
+            }
+
+?>
+				</div>
+			</div>
+<?php
+			if($monthView && ($startDay+$i)%7 < 1){?>
+			</div>
+			<div class="days">
+
+			<?}
+        }
+		if($monthView){?>
+			</div>
+
+		<?}?>
+
+		</div>
+	</div>
+</section>
+<style>
+
+
+</style>
+
+
+
+<script src="assets/js/tfusa2.js?v=<?=time()?>"></script>
+<script type="text/javascript">
+var domain = new Array();
+<?php
+foreach($domain_icon as $key => $icon){?>
+domain[<?=$key?>] = '<?=$icon?>';
+<?}?>
+
+$('#days-table').scroll(function(){
+	$('#days').css("top",this.scrollTop + "px");
+	$('#days').css("right",Math.abs(this.scrollLeft) + "px");
+	$('#days-table .r-side').css("top",this.scrollTop + "px");
+	$('#days-table .r-side .top').css("top",this.scrollTop + "px");
+});
+
+		var currentMonth = '<?=date("m/Y",strtotime($date))?>';
+		var endMonthDay = '<?=$endMonthDay?>';
+		var passMonthYear = '<?=date("t/m/Y",strtotime("first day of last month",strtotime($date)))?>';
+
+		var monthview = <?=$monthView? "1" :"0"?>;
+
+		<?php
+
+			$scrollmonth = (date("m",strtotime($date)) == date("m"))? date("d",strtotime($date)) : 0;
+		?>
+
+		var scrollmonth = <?=$scrollmonth?>;
+
+    $(function(){
+<?php
+    if($monthOrders){
+		if($monthView){
+			foreach($monthOrders  as $k => $m){
+				$i = 1;
+				while($i < count($showDays)){
+
+
+					if(strtotime($m['timeFrom']) < strtotime($showDays[$i+6]) && strtotime($m['timeUntil']) >= strtotime($showDays[$i+6])){
+						//$m['timeUntil'] = date("Y-m-d 23:59:59",strtotime($showDays[$i+6]));
+						//if(!$monthOrders[$k]['endDate']) $monthOrders[$k]['endDate'] = $m['timeUntil'];
+						//echo "console.log('".$m['orderID']." ".$m['timeUntil']."');";
+					}
+					if(strtotime($m['timeFrom'])<strtotime($showDays[$i]) && strtotime($m['timeUntil']) >= strtotime($showDays[$i]) && $m['allDay']!=1){
+						$m['timeFrom'] = date("Y-m-d 00:00:00",strtotime($showDays[$i]));
+						$monthOrders[] = $m;
+					}
+					$i+=7;
+
+				}
+
+			}
+		}
+        foreach($monthOrders as $m){
+            $month = array_map('quot', $m);
+			foreach($crooms[$month['siteID']] as $unit){
+				if($unit["unitID"] == $month['unitID']) $roomName = $unit['unitName'];
+			}
+?>
+			orderFormMonth = (new addMonth<?=$monthView? "View" : ""?>Order({
+            orderID:<?=$month['orderID']?>,
+            orderType:"<?=$month['orderType']?>",
+            orderDate:"<?=implode('/',array_reverse(explode('-',substr($month['timeFrom'],0,10))))?>",
+            endDate:"<?=implode('/',array_reverse(explode('-',substr($month['timeUntil'],0,10))))?>",
+            startTime:"<?=substr($month['timeFrom'],11,5)?>",
+            endTime:"<?=substr(($month['endDate']?: $month['timeUntil']),11,5)?>",
+            roomID:<?=$month['unitID']?>,
+            roomName:"<?=str_replace('"','\"',$roomName)?>",
+            roomNum:"<?=$roomNumber[$month['unitID']]?>",
+            name:"<?=$month['customerName']?>",
+            phone:"<?=$month['customerPhone']?>",
+            price:"<?=$month['price']?>",
+            allDay:<?=$month['allDay']?>,
+            approved:<?=($month['approved'] | $month['adminApproved'])?>,
+            orderIDBySite:<?=$month['orderIDBySite']?>,
+            domainIcon:<?=$month['domainID']?>,
+            guid:"<?=$month['guid']?$month['guid']:0?>",
+            showOrders: true
+        })).init();
+<?php
+        }
+    }
+?>
+	setclientview();
+	setTimeout(function(){scrollTableNew();},400);
+
+    });
+
+	function newload(){
+		var page;
+		if($('#monthview').val() ==2){
+			page = "calendar2_ver2";
+		}else{
+			page= "calendar_ver2";
+		}
+		window.location='index.php?page=' + page + '&monthView='+ $('#monthview').val() +'&date='+ $('#monthselect').val();
+	}
+
+	function showunits(type,units,ttl){
+		debugger;
+		if(type=="all"){
+			$('.row').show();
+			$('#showSelect').css('font-size','16px')
+		}else{
+			$('.row').hide();
+			$('#days .row').show();
+			$('.row.month').show();
+			if(type=="units"){
+				units.forEach(unit => $('.row[data-uid='+ unit +']').show());
+			}else{
+				$('.row[data-uid='+ units +']').show();
+			}
+			$('#showSelect').css('font-size','14px')
+		}
+		$('#unitSelect').hide();
+		$('#showSelect').html(ttl);
+
+
+
+
+	}
+
+
+
+	function setclientview(){
+		//debugger;
+		if($('#setview').length){
+
+			if(parseInt(localStorage.getItem('flipped'))>0){
+				toggleFlip();
+			}
+
+			if(parseInt(localStorage.getItem('wide'))>0){
+				$('.tfusa').addClass('wide');
+			}
+		}
+	}
+
+	function toggleFlip(){
+		$('.tfusa').toggleClass('flipped');
+		if($('.tfusa').hasClass('flipped')){
+			var size2 = 'height';
+			var margin2 = 'top';
+			var setwidth = true;
+			set_session('flipped',1);
+		}else{
+			var size2 = 'width';
+			var margin2 = 'right';
+			var setwidth = false;
+			set_session('flipped',0);
+		}
+		$('.order').each(function(){
+			//debugger;
+			var newsize = $(this).attr("data-size")+"%";
+			var newmargin = $(this).attr("data-margin")+"%";
+			$(this).attr('style',"");
+			$(this).css(size2, newsize);
+			$(this).css(margin2, newmargin);
+			if(setwidth) $(this).css('width', '100%');
+		})
+	}
+
+	function set_session(type,tvalue){
+		localStorage.setItem(type, tvalue);
+	}
+</script>
+
+========================================
+File Path: C:\Users\Ben Swissa\Desktop\backup\Employee - Spa Plus\user\pages\clients.php
+----------------------------------------
+<?php
+function hdate($date){
+    return typemap(implode('-', array_reverse(explode('/', trim($date)))), 'date');
+}
+
+function db2dateD($date){
+    return db2date($date, '.');
+}
+
+
+/**
+ * @var TfusaBaseUser $_CURRENT_USER
+ */
+$sid = intval($_GET['sid']) ?: $_CURRENT_USER->select_site();
+if($sid && !$_CURRENT_USER->has($sid)){
+    echo 'Access denied';
+    return;
+}
+
+$title = "רשימת לקוחות";
+
+if($_GET['from']){
+    $timeFrom = typemap(implode('-',array_reverse(explode('/',trim($_GET['from'])))),"date");
+}else{
+    $timeFrom = '2001-01-01';
+    $_GET['from'] = implode('/',array_reverse(explode('-',trim($timeFrom))));
+}
+
+if($_GET['to']){
+    $timeUntil = typemap(implode('-',array_reverse(explode('/',trim($_GET['to'])))),"date");
+}else{
+    $timeUntil = date("Y-m-t");
+    $_GET['to'] = implode('/',array_reverse(explode('-',trim($timeUntil))));
+}
+
+$canDup = true;
+$where = ["c.siteID IN (" . ($sid ?: $_CURRENT_USER->sites(true)) . ")"];
+
+//$clients = udb::key_row("SELECT crm_clients.*, sites.siteName FROM `crm_clients` INNER JOIN `sites` USING(`siteID`) WHERE crm_clients.siteID IN (" . $_CURRENT_USER->sites(true) . ") ORDER BY `clientID` DESC", 'clientID');
+
+if(!$_GET['sort'] || !in_array($_GET['sort'], ['ASC', 'DESC']))
+    $_GET['sort'] = "DESC";
+
+if ($_GET['source'] == 'health2' || $_GET['source'] == 'health'){
+    $where[] = "c.source = 'health'";
+
+    if ($_GET['source'] == 'health2')
+        $canDup = false;
+}
+elseif ($_GET['source'])
+    $where[] = "c.source = '" . udb::escape_string(typemap($_GET['source'], 'string')) . "'";
+
+if ($_GET['ads'] > 0)
+    $where[] = "c.allowAds = 1";
+elseif ($_GET['ads'] < 0)
+    $where[] = "c.allowAds = 0";
+
+if ($_GET['sfld'] == 'phone'){
+    $sorter = 'c.clientMobile ' . udb::escape_string($_GET['sort']);
+}
+elseif ($_GET['timeType'] == 'u'){
+    $where[] = "c.updateTime BETWEEN '" . udb::escape_string($timeFrom) . "' AND '" . udb::escape_string($timeUntil) . "'";
+    $sorter  = 'c.updateTime ' . udb::escape_string($_GET['sort']);
+}
+else {
+    $where[] = "c.createTime BETWEEN '" . udb::escape_string($timeFrom) . "' AND '" . udb::escape_string($timeUntil) . "'";
+    $sorter  = 'c.createTime ' . udb::escape_string($_GET['sort']);
+}
+
+if(intval($_GET['birthDay'])){
+	$where[] = " DAY(c.clientBirthday) =  ".intval($_GET['birthDay']);
+}
+
+if(intval($_GET['birthMonth'])){
+	$where[] = " MONTH(c.clientBirthday) =  ".intval($_GET['birthMonth']);
+}
+
+if(intval($_GET['birthYear'])){
+	$where[] = " YEAR(c.clientBirthday) =  ".intval($_GET['birthYear']);
+}
+
+if ($freeText = udb::escape_string(typemap($_GET['free'] ?? '', 'string'))){
+    if (is_numeric($freeText))
+        $list = ['c.clientEmail', 'c.clientPhone', 'c.clientMobile', 'c.clientPassport', 'c.clientID'];
+    else
+        $list = ['c.clientName', 'c.clientEmail'];
+
+    $where[] = "(" . implode(" LIKE '%" . $freeText . "%' OR ", $list) . " LIKE '%" . $freeText . "%')";
+}
+
+
+$pager = new UserPager();
+$pager->setPage(300);
+
+$dups = $canDup ? udb::key_value("SELECT `clientMobile`, COUNT(*) AS `cnt` FROM `crm_clients` AS `c` WHERE " . implode(' AND ', $where) . " GROUP BY `clientMobile` HAVING `cnt` > 1 ORDER BY NULL") : [];
+
+$clients = udb::key_row("SELECT SQL_CALC_FOUND_ROWS c.*, sites.siteName,settlements.`TITLE` AS clientCity FROM `crm_clients` AS `c` INNER JOIN `sites` USING(`siteID`) LEFT JOIN settlements ON(c.settlementID = settlements.settlementID) WHERE " . implode(" AND ", $where) . ($canDup ? "" : " GROUP BY c.clientMobile ") . " ORDER BY " . $sorter . $pager->sqlLimit(), 'clientID');
+
+$totalCnt = udb::single_value("SELECT FOUND_ROWS()");
+
+$pager->setTotal($totalCnt);
+
+//include "partials/orders_menu.php";
+?>
+
+<div class="searchOrder">
+	<div class="ttl" style="cursor:pointer;margin:-10px;padding:10px" onclick="$('#searchForm').toggleClass('hide');">חפש לקוח</div>
+	<form method="GET" autocomplete="off" action="" class="hide"  id="searchForm">
+		<input type="hidden" name="page" value="clients" />
+        <input type="hidden" name="sfld" value="" />
+
+<?php
+    if (!$_CURRENT_USER->single_site){
+        $sname = udb::key_value("SELECT `siteID`, `siteName` FROM `sites` WHERE `siteID` IN (" . $_CURRENT_USER->sites(true) . ")");
+?>
+        <div class="inputWrap">
+            <select name="sid" id="sid" title="שם מתחם">
+                <option value="0">כל המתחמים</option>
+<?php
+        foreach($sname as $id => $name)
+            echo '<option value="' , $id , '" ' , ($id == $sid ? 'selected' : '') , '>' , $name , '</option>';
+?>
+            </select>
+		</div>
+<?php
+    }
+?>
+        <div class="inputWrap">
+            <select name="timeType" id="otype" title="">
+                <option value="c">לפי תאריך הוספה</option>
+                <option value="u" <?=($_GET['timeType'] == 'u' ? 'selected' : '')?>>לפי תאריך עדכון</option>
+            </select>
+        </div>
+		<div class="inputWrap">
+			<input type="text" name="from" placeholder="מתאריך" class="searchFrom" value="<?=typemap($_GET['from'], 'string')?>" readonly>
+		</div>
+		<div class="inputWrap">
+			<input type="text" name="to" placeholder="עד לתאריך" value="<?=typemap($_GET['to'], 'string')?>" class="searchTo" readonly>
+		</div>
+
+        <div class="inputWrap">
+            <select name="source" id="source" title="">
+                <option value="">כל המקורות</option>
+                <option value="treatment" <?=($_GET['source'] == 'treatment' ? 'selected' : '')?>>מטיפולים</option>
+                <option value="order" <?=($_GET['source'] == 'order' ? 'selected' : '')?>>מהזמנות</option>
+                <option value="health" <?=($_GET['source'] == 'health' ? 'selected' : '')?>>מהצהרות בריאות</option>
+                <option value="health2" <?=($_GET['source'] == 'health2' ? 'selected' : '')?>>מהצהרות בריאות (ללא כפולים)</option>
+            </select>
+        </div>
+        <div class="inputWrap">
+            <select name="ads" id="ads" title="">
+                <option value="">כל הלקוחות</option>
+                <option value="1" <?=($_GET['ads'] > 0 ? 'selected' : '')?>>רק עם דיוור מאושר</option>
+                <option value="-1" <?=($_GET['ads'] < 0 ? 'selected' : '')?>>רק בלי דיוור מאושר</option>
+            </select>
+        </div>
+		<div class="inputWrap">
+            <select name="sort" id="sort" title="">
+                <option value="ASC">תאריך רחוק לקרוב</option>
+                <option value="DESC" <?=($_GET['sort'] == 'DESC' ? 'selected' : '')?>>תאריך קרוב לרחוק</option>
+            </select>
+		</div>
+        <div class="inputWrap">
+            <input type="text" name="free" placeholder="חיפוש חופשי" value="<?=$freeText?>" />
+        </div>
+		<div style="display:flex;margin:5px">
+			<div class="inputWrap" style="width:calc(100%/3);margin:0;position:relative;">
+				<label style="position:absolute;top:0;font-size:12px;padding-right:5px;pointer-events:none">שנת לידה</label>
+				<select name="birthYear" id="birthYear" title="">				
+				<option>בחר</option>
+				<?for($i=(date('Y')-10);$i>(date('Y')-110);$i--){?>
+					<option value="<?=$i?>" <?=($_GET['birthYear'] == $i ? 'selected' : '')?>><?=$i?></option>
+				<?}?>
+				</select>
+			</div>
+			<div class="inputWrap" style="width:calc(100%/3);margin:0;position:relative">
+				<label style="position:absolute;top:0;font-size:12px;padding-right:5px;pointer-events:none">חודש לידה</label>
+				<select name="birthMonth" id="birthMonth" title="">				
+				<option>בחר</option>
+				<?for($i=1;$i<13;$i++){?>
+					<option value="<?=$i?>" <?=($_GET['birthMonth'] == $i ? 'selected' : '')?>><?=$i?></option>
+				<?}?>
+				</select>
+			</div>
+			<div class="inputWrap" style="width:calc(100%/3);margin:0;position:relative;">
+				<label style="position:absolute;top:0;font-size:12px;padding-right:5px;pointer-events:none">יום לידה</label>
+				<select name="birthDay" id="birthDay" title="">				
+				<option>בחר</option>
+				<?for($i=1;$i<32;$i++){?>
+					<option value="<?=$i?>" <?=($_GET['birthDay'] == $i ? 'selected' : '')?>><?=$i?></option>
+				<?}?>
+				</select>
+			</div>
+			
+		</div>
+
+		<a class="clear" href="?page=<?=typemap($_GET['page'], 'string')?>">נקה</a>
+		<input type="submit" value="חפש">
+	</form>
+</div>
+<style>
+.popup.sms-pop {top:0;left:0;right:auto;width:100%;}
+.popup.sms-pop .pop_cont {
+    max-width: 600px;
+}
+
+.sms-pop .pop_cont .create_order {
+    width: 100%;
+    max-width: 100%;
+    right: auto;
+    position: relative;
+    background: transparent;
+    padding: 0;
+    height: auto;
+}
+.popup.sms-pop .create_order .inputWrap.name input {
+    border: 0;
+    box-shadow: none;
+}
+.popup.sms-pop .create_order .inputWrap.name {filter:none;
+    background: transparent;
+    box-shadow: none;
+    border: 0;
+    width: 150px;
+    pointer-events: none;
+}
+
+.addlink {
+    font-size: 16px;
+    font-weight: bold;
+    color: #FFF;
+    display: block;
+    line-height: 54px;
+    background: #0dabb6;
+    cursor: pointer;
+    padding: 0 20px;
+    border-radius: 6px;
+    margin: 0 auto;
+    display: inline-block;
+    margin-bottom: 20px;
+    max-width: none;
+    text-align: center;
+}
+
+@media (min-width: 992px) {
+.popup.sms-pop {max-width:calc(100% - 300px);}
+
+}
+</style>
+<div class="send-sms" onclick="$('.sms-pop').fadeIn('fast');">שליחת SMS</div>
+<div class="popup sms-pop" >
+    <div class="pop_cont">
+        <div class="close" onclick="$('.sms-pop').fadeOut('fast')">×</div>
+        <div class="title">שליחת SMS</div>	
+        <form class="create_order" style="font-size:0;" id="smsForm">
+       
+				<div class="inputWrap half" style="z-index:10">
+					<input type="text" name="phone" id="phone" value="<?=$order['customerPhone']?>" class="ac-inp" />
+					<label for="phone">טלפון</label>
+                    <div class="autoBox"><div class="autoComplete"></div></div>
+				</div>
+                <div class="inputWrap half name" style="z-index:20">
+					<div class="autoComplete_wrapper" role="combobox" aria-owns="autoComplete_list_1" aria-haspopup="true" aria-expanded="false">
+                        <input style="    width: 100%;
+    height: 60px;
+    padding: 0 10px;
+    box-sizing: border-box;" type="text" name="name" id="name" value="" class="ac-inp" aria-controls="autoComplete_list_1" aria-autocomplete="both">
+                        <ul id="autoComplete_list_1" role="listbox" hidden=""></ul>
+                    </div>
+                    <div class="autoBox"><div class="autoComplete"></div></div>
+				</div> 
+                
+                <?php 
+                $spaplusID = udb::single_value("SELECT spaplusID FROM sites WHERE siteID=".$_CURRENT_USER->active_site());
+                $activeLink = json_decode(file_get_contents('https://www.spaplus.co.il/bizapi/index.php?key=Kew0Rd!Kew0Rd!Kew0Rd!&action=225&siteID='.$spaplusID), true);
+                if($_CURRENT_USER->active_site() && $activeLink && $activeLink['useBizOnLinePop']) { 
+                    
+                    ?><div class="addlink" data-link="https://bizonline.co.il/bizpop.php?spa=<?=$_CURRENT_USER->active_site()?>">הוסף קישור להזמנה אונליין</div><?php } ?>
+     
+</form>
+        <textarea name="smscon" maxlength="80"></textarea>
+        <div class="limit">הגבלת תווים <span><span class="len">0</span>/<span class="of">80</span></span></div>
+        <div class="send">שליחה</div>
+    </div>
+</div>
+
+
+
+<style>
+.item.order.isSpa td.f,.item.order.isSpa td.c {direction:ltr; text-align:right}
+.item.order.isSpa td.f.rtl, .item.order.isSpa td.c.rtl {direction:rtl}
+
+.send-sms {
+    line-height: 44px;
+    margin: 10px 5px;
+    display: block;
+    font-size: 16px;
+    color: #fff;
+    background: #0dabb6;
+    border: 1px #0dabb6 solid;
+    padding: 0 10px;
+    cursor: pointer;
+    font-weight: 500;
+    border-radius: 10px;
+    max-width: 120px;
+}
+
+
+
+.orders_num.o-ctrl {
+    background: #c9f2fd;
+}
+
+.orders_num {
+    cursor: pointer;
+    position: relative;
+}
+
+.orders_num.o-ctrl::after {
+    opacity: 1;
+}
+
+.orders_num.o-up::after {
+    opacity: 0.2;
+}
+.orders_num::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    box-sizing: border-box;
+    border-left: 2px black solid;
+    border-bottom: 2px black solid;
+    display: block;
+    position: absolute;
+    bottom: 0;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    transform: rotate(-45deg);
+    opacity: 0;
+}
+
+.orders_num.o-down::after {
+    opacity: 0.5;
+    transform: rotate(135deg);
+}
+.excel {
+    line-height: 44px;
+    margin: 10px 5px;
+    display: inline-block;
+    font-size: 16px;
+    color: #0dabb6;
+    background: white;
+    border: 1px
+    #0dabb6 solid;
+    padding: 0 10px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+</style>
+<section class="orders" style="max-width:none">
+	<div class="last-orders">
+		<div class="title"><?=$title?>
+			<!-- div id="btns-reports" class="btns">
+				<div id="b-makor" onclick="show_makor()">מקורות הגעה</div>
+				<div id="b-paytypes" onclick="show_paytypes()">אמצעי תשלום</div>
+				<div id="b-agents" onclick="show_agents()">סוכנים</div>
+				<div id="b-all" onclick="show_all()" class='active'>מקיף</div>
+			</div -->
+		</div>
+        <div class="excel" id="expExcel" onclick="window.location.href+='&exp=excel'">ייצוא לאקסל</div>
+
+		<div class="AAAreport-container">
+            <?php echo $pager->render() ?>
+			<table class="reports" id="reports">
+				<thead>
+				<tr class='sticky top'>
+					<th>#</th>
+					<th>שם מלא</th>
+                    <th>ת.ז.</th>
+					<th class="sortable <?=($_GET['sfld'] == 'phone' ? $_GET['sort'] : '')?>" data-sort-by="phone">טלפון</th>
+                    <!-- th>טלפון נוסף</th -->
+                    <th>דוא"ל</th>
+                    <th>עיר</th>
+                    <th>כתובת</th>
+                    <th>דיוור</th>
+                    <th>תאריך לידה</th>
+					<th>תאריך הוספה</th>
+                    <th>עדכון אחרון</th>
+                    <?=($sid ? '' : '<th>שם העסק</th>')?>
+                    <th>&nbsp;</th>
+				</tr>
+				</thead>
+				<tbody>
+
+<?php
+//        UserUtilsNew::init();
+//
+//        $mcache = [];
+//		$cuponTypes = UserUtilsNew::$CouponsfullList;
+//		$cuponTypes['online'] = 'הזמנה אונליין';
+        foreach($clients as $client) {
+//            $que = "SELECT orders.timeFrom, orders.therapistID, orders.treatmentLen, orders.price FROM `orders` WHERE orders.orderID <> orders.parentOrder AND `parentOrder` = " . $client['parentOrder'];
+//            $tipulim = udb::single_list($que);
+//
+//            $totalPay = 0;
+//            foreach($tipulim as $sub){
+//                $mcache[$sub['therapistID']] = $master = $mcache[$sub['therapistID']] ?? new MasterPay($sub['therapistID']);
+//
+//                $pay = $master->get_treat_pay($sub['timeFrom'], $sub['treatmentLen'], $sub['price']);
+//                $totalPay += $pay['total'];
+//            }
+//
+//            $extraCost = 0;
+//            if ($client['extras']){
+//                $tmp = json_decode($client['extras'], true);
+//                $extraCost = $tmp['total'];
+//            }
+//            $payTypes = explode('|', $client['ppType']);
+//
+//            $payTypes = $payTypes ? implode('<br />', array_unique(array_map(function ($str){return  UserUtilsNew::method(...explode('-', $str));}, $payTypes))) : '';
+?>
+				<tr class="item order isSpa" data-cid="<?=$client['clientID']?>" data-sid="<?=$client['siteID']?>" <?=($dups[$client['clientMobile']] ? 'style="background-color:#FDD"' : '')?>>
+                    <td class="c"><?=$client['clientID']?></td>
+					<td class="c rtl"><?=$client['clientName']?></td>
+                    <td class="c"><?=$client['clientPassport']?></td>
+					<td class="c"><?=$client['clientMobile']?></td>
+                    <!-- td class="c"><?=$client['clientPhone']?></td -->
+                    <td class="c"><?=$client['clientEmail']?></td>
+                    <td class="c"><?=$client['clientCity']?></td>
+                    <td class="c"><?=$client['clientAddress']?></td>
+                    <td style="text-align:center"><?=($client['allowAds'] ? '<span style="color:green">כן</span>' : '<span style="color:red">לא</span>')?></td>
+					<td class="c"><?=date('d.m.y', strtotime($client['clientBirthday']))?></td>
+					<td class="c"><?=date('d.m.y', strtotime($client['createTime']))?></td>
+					<td class="c"><?=date('d.m.y', strtotime($client['updateTime']))?></td>
+                    <?=($sid ? '' : '<td class="c">' . $client['siteName'] . '</td>')?>
+                    <td><img class="del" src="/user/assets/img/X.jpg" width="15" height="15" style="margin:auto" alt="מחק לקוח" /></td>
+<? /*                    
+					<td class="c"><?=implode('<br />', array_map('db2dateD', explode('#', $client['treatDates'])))?></td>
+					<td class="c"><?=number_format($client['countTreatments'])?></td>
+					<td class="c"><?=number_format($client['treatCost'])?></td>
+                    <td class="c"><?=number_format($totalPay)?></td>
+					<td class="c"><?=number_format($client['treatCost'] - $totalPay)?></td>
+                    <td class="c"><?=number_format($client['roomCost']) ?></td>
+					<td class="c"><?=number_format($extraCost)?></td>
+                    <td class="c"><?=number_format($client['price'] + $client['discount'])?></td>
+                    <td class="c"><?=number_format($client['discount'])?></td>
+					<td class="c number"><?=number_format($client['price'])?></td>
+					<td class="c number"><?=number_format($client['paid'])?></td>
+					<td class="c number"><?=number_format($client['price'] - $client['paid'])?></td>
+                    <td><?=$client['userName']?></td>
+                    <td><?=$client['sourceID']? $cuponTypes[$client['sourceID']] : "הזמנה רגילה"?></td>
+                    <td><?=$payTypes?><?//print_r($payTypesIDs)?></td> */ ?>
+				</tr>
+				
+				<?
+
+//				/*****************************Total Lines Create **********************************/
+//				$totalOrders ++;
+//				$totalTreatCost += $order['treatCost'];
+//				$totalpayAll += $totalPay;
+//				$totalTreatIncome += $order['treatCost'] - $totalPay;
+//				$totalExtraIncome += $order['roomCost'] + $extraCost;
+//				$totalRooms += $order['roomCost'];
+//				$totalExtras += $extraCost;
+//				$totalMechiron += $order['treatCost'] + $order['roomCost'] + $extraCost;
+//				$totalDiscount += $order['treatCost'] + $order['roomCost'] + $extraCost - $order['price'];
+//				$totalPrice +=$order['price'];
+//				$totalBalance += ($order['price'] - $order['paid']);
+//				$totalPaid +=$order['paid'];
+//				$totalTreatments += $order['countTreatments'];
+//
+//				/***********************************************************************************/
+//
+//				/***************************** Total Agents Lines Create **********************************/
+//
+//				$a_name[$order['agent_buserID']] = $order['userName'];
+//				$a_totalOrders[$order['agent_buserID']] ++;
+//				$a_totalTreatCost[$order['agent_buserID']] += $order['treatCost'];
+//				$a_totalpayAll[$order['agent_buserID']] += $totalPay;
+//				$a_totalTreatIncome[$order['agent_buserID']] += $order['treatCost'] - $totalPay;
+//				$a_totalExtraIncome[$order['agent_buserID']] += $order['roomCost'] + $extraCost;
+//				$a_totalRooms[$order['agent_buserID']] += $order['roomCost'];
+//				$a_totalExtras[$order['agent_buserID']] += $extraCost;
+//				$a_totalMechiron[$order['agent_buserID']] += $order['treatCost'] + $order['roomCost'] + $extraCost;
+//				$a_totalDiscount[$order['agent_buserID']] += $order['treatCost'] + $order['roomCost'] + $extraCost - $order['price'];
+//				$a_totalPrice[$order['agent_buserID']] +=$order['price'];
+//				$a_totalBalance[$order['agent_buserID']] += ($order['price'] - $order['paid']);
+//				$a_totalPaid[$order['agent_buserID']] +=$order['paid'];
+//				$a_totalTreatments[$order['agent_buserID']] += $order['countTreatments'];
+//
+//
+//
+//				/***********************************************************************************/
+//
+//				/***************************** Total payType Lines Create **********************************/
+//
+//
+//
+//				/***********************************************************************************/
+//
+//
+//
+//
+//				/***************************** Total Source Lines Create **********************************/
+//
+//				$m_name[$order['sourceID']] = $order['sourceID']? $cuponTypes[$order['sourceID']] : "הזמנה רגילה";
+//				$m_totalOrders[$order['sourceID']] ++;
+//				$m_totalTreatCost[$order['sourceID']] += $order['treatCost'];
+//				$m_totalpayAll[$order['sourceID']] += $totalPay;
+//				$m_totalTreatIncome[$order['sourceID']] += $order['treatCost'] - $totalPay;
+//				$m_totalExtraIncome[$order['sourceID']] += $order['roomCost'] + $extraCost;
+//				$m_totalRooms[$order['sourceID']] += $order['roomCost'];
+//				$m_totalExtras[$order['sourceID']] += $extraCost;
+//				$m_totalMechiron[$order['sourceID']] += $order['treatCost'] + $order['roomCost'] + $extraCost;
+//				$m_totalDiscount[$order['sourceID']] += $order['treatCost'] + $order['roomCost'] + $extraCost - $order['price'];
+//				$m_totalPrice[$order['sourceID']] +=$order['price'];
+//				$m_totalBalance[$order['sourceID']] += ($order['price'] - $order['paid']);
+//				$m_totalPaid[$order['sourceID']] +=$order['paid'];
+//				$m_totalTreatments[$order['sourceID']] += $order['countTreatments'];
+//
+//
+//				/***********************************************************************************/
+//
+//
+//
+
+
+        }
+
+		
+/*        foreach($a_name as $key =>  $name ){
+?>
+				<tr class='agents' data-userid="<?=$key?>">
+					<td><b><?=$name?></b><br><?=$a_totalOrders[$key]?> הזמנות</td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td><?=number_format($a_totalTreatments[$key]);?></td>
+					<td>₪<?=number_format($a_totalTreatCost[$key]);?><div>מחיר ממוצע ₪<?=number_format(($a_totalTreatCost[$key]/$a_totalTreatments[$key]),2);?></div></td>
+					<td>₪<?=number_format($a_totalpayAll[$key]);?></td>
+					<td>₪<?=number_format($a_totalTreatIncome[$key]);?></td>
+					<td>₪<?=number_format($a_totalRooms[$key]);?></td>
+					<td>₪<?=number_format($a_totalExtras[$key]);?></td>
+                    <td>₪<?=number_format($a_totalMechiron[$key]);?></td>
+                    <td>₪<?=number_format($a_totalDiscount[$key]);?></td>
+					<td>₪<?=number_format($a_totalPrice[$key])?><div>מחיר ממוצע ₪<?=number_format(($a_totalPrice[$key]/$a_totalOrders[$key]),2);?></div><div></div></td>
+					<td>₪<?=number_format($a_totalPaid[$key])?></td>
+					<td>₪<?=number_format($a_totalBalance[$key])?></td>
+                    <td><?=$name?></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+<?php
+        }
+
+		foreach($m_name as $key =>  $name ){
+?>
+				<tr class='makor' data-makorid="<?=$key?>">
+					<td><b><?=$name?></b><br><?=$m_totalOrders[$key]?> הזמנות</td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td><?=number_format($m_totalTreatments[$key]);?></td>
+					<td>₪<?=number_format($m_totalTreatCost[$key]);?><div>מחיר ממוצע ₪<?=number_format(($m_totalTreatCost[$key]/$m_totalTreatments[$key]),2);?></div></td>
+					<td>₪<?=number_format($m_totalpayAll[$key]);?></td>
+					<td>₪<?=number_format($m_totalTreatIncome[$key]);?></td>
+					<td>₪<?=number_format($m_totalRooms[$key]);?></td>
+					<td>₪<?=number_format($m_totalExtras[$key]);?></td>
+                    <td>₪<?=number_format($m_totalMechiron[$key]);?></td>
+                    <td>₪<?=number_format($m_totalDiscount[$key]);?></td>
+					<td>₪<?=number_format($m_totalPrice[$key])?><div>מחיר ממוצע ₪<?=number_format(($m_totalPrice[$key]/$m_totalOrders[$key]),2);?></div><div></div></td>
+					<td>₪<?=number_format($m_totalPaid[$key])?></td>
+					<td>₪<?=number_format($m_totalBalance[$key])?></td>
+                    <td></td>
+                    <td><?=$name?></td>
+                    <td></td>
+                </tr>
+<?php
+        }
+
+        foreach($payTypeSums as $pt => $prow ){
+?>
+				<tr class='payTypes' data-paytype="<?=$pt?>">
+					<td><b><?=(UserUtilsNew::method(...explode('-', $pt)) ?: $pt)?></b><br><?=$prow['cnt']?> הזמנות</td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+                    <td></td>
+                    <td></td>
+					<td></td>
+					<td>₪<?=number_format($prow['total'])?></td>
+					<td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+<?php
+        }*/
+
+?>
+				<tr class='sticky bottom total' id="totalall">
+					<td>סה"כ: </td>
+					<td colspan="15"><?=$totalCnt?> לקוחות</td>
+
+<? /*					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td><?=number_format($totalTreatments);?></td>
+					<td>₪<?=number_format($totalTreatCost);?><div>מחיר ממוצע ₪<?=$totalTreatments? number_format(($totalTreatCost/$totalTreatments),2) : "";?></div></td>
+					<td>₪<?=number_format($totalpayAll);?></td>
+					<td>₪<?=number_format($totalTreatIncome);?></td>
+					<td>₪<?=number_format($totalRooms);?></td>
+					<td>₪<?=number_format($totalExtras);?></td>
+                    <td>₪<?=number_format($totalMechiron);?></td>
+                    <td>₪<?=number_format($totalDiscount);?></td>
+					<td>₪<?=number_format($totalPrice)?><div>מחיר ממוצע ₪<?=$totalTreatments? number_format(($totalPrice/$totalTreatments),2) : "";?></div></td>
+					<td>₪<?=number_format($totalPaid)?></td>
+					<td>₪<?=number_format($totalBalance)?></td>
+                    <td></td>
+                    <td></td>
+                    <td></td> */ ?>
+                </tr>
+			</table>
+		</div>
+	</div>
+</section>
+
+<style>
+.report-container{max-height:calc(100vh - 250px);overflow:auto;padding-left:20px;clear:both;position:relative;top:10px}
+.reports{font-size:14px;border-collapse:collapse}
+.reports td, .reports th{padding:5px;vertical-align:middle;border:1px #ccc solid;text-align:right}
+.reports td.number{direction:ltr}
+.reports .sticky{position:sticky;background:white;}
+.reports .sticky.top{top:-20px}
+.reports .sticky.bottom{bottom:-20px}
+.reports .bottom td{font-weight:bold}
+.reports tr:hover{background:#cfeef0;cursor:pointer}
+.reports .agents{display:none}
+.reports .makor{display:none}
+.reports .payTypes{display:none}
+.reports .total{display:table-row }
+.reports td > div{font-size:12px;font-weight:normal}
+.last-orders .btns {float: left;}
+.last-orders .btns > div {display: inline-block;font-size: 16px;line-height: 34px;padding: 0 20px;margin: 0 2px;border: 1px #0dabb6 solid;color: #999;font-weight: normal;background: white;border-radius: 10px;cursor: pointer;}
+.last-orders .btns > div.active {color: white;background: #0dabb6;}
+.ASC {background:url('/user/assets/img/arrow-up.png') no-repeat left center;}
+.DESC {background:url('/user/assets/img/arrow-down.png') no-repeat left center;}
+</style>
+
+<script>
+
+$('.addlink').on('click', function() {
+    let _link = $(this).attr('data-link');
+    let _con = $(this).closest('.sms-pop').find('textarea').val();
+    _con += `
+`+_link;
+    $(this).closest('.sms-pop').find('textarea').val(_con).trigger('change');
+})
+
+$('.sms-pop .send').on('click', function() {
+    let _con = $(this).closest('.sms-pop').find('textarea').val();
+    let _phone = $(this).closest('.sms-pop').find('input[name="phone"]').val();
+
+    $.post('ajax_spaSMS.php', {phone: _phone, sms_con: _con, siteID: <?=$_CURRENT_USER->active_site()?>}, function(res) {
+        if(res.error)
+            Swal.fire({icon:'error', text:res.error});
+        else Swal.fire({icon:'success', text:res.msg}).then(function() {
+            $('.sms-pop').fadeOut('fast')
+        });
+    })
+})
+
+$('textarea[name="smscon"]').on('change keyup', function() {
+    let _len = $(this).val().length;
+    $(this).parent().find('.limit .len').html(_len);
+});
+
+
+
+(typeof 'autoComplete' == 'function' ? Promise.resolve() : $.getScript('/user/assets/js/autoComplete.min.js')).then(function(){
+        var cache = {tm: 0, cache: []};
+		//debugger;
+        function caller(str){			
+			//debugger;
+            if (str.length < 3)
+                return Promise.resolve([]);
+
+            return new Promise(function(res){
+                var c = {text:str, res:res};
+
+                cache.cache.push(c);
+                if (cache.tm)
+                    window.clearTimeout(cache.tm);
+
+                cache.tm = window.setTimeout(function(){
+                    var last = cache.cache.pop();
+
+                    for(var i = 0; i < cache.cache.length; ++i)
+                        cache.cache[i].res([]);
+
+                    cache.tm = null;
+                    cache.cache = [];
+
+                    last.res($.get('ajax_client.php', 'act=clientInfo&sid=<?=($siteID ?: $_CURRENT_USER->active_site())?>&val=' + last.text).then(res => res.clients));
+                }, 500);
+            });
+        }
+
+
+        $('.ac-inp').each(function(){
+            var inp = this;
+
+            const autoCompleteJS = new autoComplete({
+                selector: '#' + inp.id,
+                data: {
+                    src: caller,
+                    cache: false,
+                    keys: ['_text', 'email']
+                },
+                resultsList: {
+                    maxResults: 20
+                },
+                resultItem: {
+                    element: function(item, data){
+                        item.setAttribute("data-auto", JSON.stringify(data.value));
+                    },
+                    highlight: {
+                        render: true
+                    }
+                },
+                events: {
+                    list: {
+                        click: function(e){
+                            var li = e.target.nodeName.toUpperCase() == 'LI' ? e.target : $(e.target).closest('li').get(0), data = JSON.parse(li.dataset.auto || '{}'),
+                                    form = document.getElementById('smsForm'), el;
+
+                            Object.keys(data).forEach(function(key){
+                                if (data[key] && (el = form.querySelector('input[name="' + key + '"]')))
+                                    el.value = String(data[key]).trim();
+                            });
+
+                            this.setAttribute('hidden', '');
+                        }
+                    }
+                }
+            });
+        });
+        <?
+$city_list = json_encode(udb::full_list("SELECT settlementID , TITLE AS clientCity FROM `settlements` WHERE 1"));
+?>
+		
+    });
+
+
+
+
+//$('.orders_num').click(function(){
+//    var table = $(this).parents('table').eq(0)
+//    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+//    this.asc = !this.asc
+//    $(".orders_num").removeClass("o-ctrl");
+//	$(this).addClass('o-ctrl');
+//	if (!this.asc){
+//		rows = rows.reverse();
+//		$(this).removeClass('o-up');
+//		$(this).addClass('o-down');
+//	}else{
+//		$(this).addClass('o-up');
+//		$(this).removeClass('o-down');
+//	}
+//    for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+//});
+
+function comparer(index) {
+    return function(a, b) {
+        var valA = getCellValue(a, index).replace(/[^\d.-]/g, ''), valB = getCellValue(b, index).replace(/[^\d.-]/g, '')
+        return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+    }
+}
+function getCellValue(row, index){ return $(row).children('td').eq(index).text() }
+
+
+$('.reports .agents td').click(function(){
+	//debugger;
+	var uid = $(this).parent().data('userid');
+	$('.reports tbody tr').css('display','none');
+	$(".reports tr[data-userid='"+uid+"']").css('display','table-row');
+	$(this).parent().addClass('sticky bottom');
+});
+
+$('.reports .makor td').click(function(){
+	//debugger;
+	var uid = $(this).parent().data('makorid');
+	$('.reports tbody tr').css('display','none');
+	$(".reports tr[data-makorid='"+uid+"']").css('display','table-row');
+	$(this).parent().addClass('sticky bottom');
+});
+
+$('.reports .payTypes td').click(function(){
+	
+	var pid = $(this).parent().data('paytype');
+	$('.reports tbody tr').css('display','none');	
+	$(this).parent().css('display','table-row');
+	$(this).parent().addClass('sticky bottom');
+	$(".reports tbody tr").each(function(){
+		//debugger;
+		var ptypes = $(this).data('paytypes');
+		if (ptypes.indexOf(pid) >= 0){			
+			$(this).css('display','table-row');
+		}
+	})
+	
+});
+
+$(function(){
+    $('.sortable').on('click', function(){
+        let dir = $(this).hasClass('ASC') ? 'DESC' : 'ASC', fld = $(this).data('sort-by');
+
+        $('input[name="sfld"]').val(fld);
+        $('#sort').val(dir);
+
+        $('#searchForm').find('input[type="submit"]').click();
+    });
+
+    $("img.del").on('click', function(){
+        let data = $(this).closest('tr').data();
+
+        if (data.cid && data.sid)
+            Swal.fire({
+                title: 'בטוח?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'מחק',
+                cancelButtonText: 'בטל'
+            }).then((result) => {
+                if (result.isConfirmed)
+                    $.post('ajax_client.php', {act:'delete', sid:data.sid, cid:data.cid}).then(() =>  $(this).closest('tr').remove());
+            });
+        else
+            Swal.fire('Error', 'Cannot delete this client', 'error');
+    });
+
+    $('#expExcel').on('click', function(){
+        window.location.href = 'ajax_excel_clients.php' + window.location.search;
+    });
+});
+
+//function show_agents(){
+//
+//	$('.reports tbody tr:not(#totalall)').removeClass('sticky bottom')
+//	$('.reports tbody tr').css('display','none');
+//	$(".reports tbody .agents").css('display','table-row');
+//	$("#totalall").css('display','table-row');
+//	$("#btns-reports > div").removeClass('active');
+//	$("#b-agents").addClass('active');
+//
+//
+//}
+//
+//function show_makor(){
+//
+//	$('.reports tbody tr:not(#totalall)').removeClass('sticky bottom')
+//	$('.reports tbody tr').css('display','none');
+//	$(".reports tbody .makor").css('display','table-row');
+//	$("#totalall").css('display','table-row');
+//	$("#btns-reports > div").removeClass('active');
+//	$("#b-makor").addClass('active');
+//
+//
+//}
+//
+//function show_paytypes(){
+//	//debugger;
+//	$('.reports tbody tr:not(#totalall)').removeClass('sticky bottom')
+//	$('.reports tbody tr').css('display','none');
+//	$(".reports tbody .payTypes").css('display','table-row');
+//	$("#totalall").css('display','table-row');
+//	$("#btns-reports > div").removeClass('active');
+//	$("#b-paytypes").addClass('active');
+//
+//
+//}
+//
+//function show_all(){
+//	$('.reports tbody tr:not(#totalall)').removeClass('sticky bottom')
+//	$('.reports tbody tr').attr('style','');
+//	$("#btns-reports > div").removeClass('active');
+//	$("#b-all").addClass('active');
+//}
+
+</script>
+
+========================================
+File Path: C:\Users\Ben Swissa\Desktop\backup\Employee - Spa Plus\user\pages\orders.php
+----------------------------------------
+<?php
+/**
+ * @var TfusaBaseUser $_CURRENT_USER
+ */
+$sid = intval($_GET['sid']) ?: $_CURRENT_USER->select_site();
+if($sid && !$_CURRENT_USER->has($sid)){
+    echo 'Access denied';
+    return;
+}
+
+if(intval($_GET['sourceID']==9999)){
+	if(intval($_GET['extras']==1)){
+		$dataSave['alerts_count_wr'] = 0;
+	}else{
+		$dataSave['alerts_count'] = 0;
+	}
+	udb::update('biz_users',$dataSave ,"buserID=".$_CURRENT_USER->id());
+}
+
+$title = "רשימת הזמנות";
+if ($_CURRENT_USER->is_spa()){
+$que = "SELECT SQL_CALC_FOUND_ROWS `sites`.`siteName`,`orders`.*
+		, GROUP_CONCAT(rooms_units.unitName SEPARATOR ', ') AS `unitNames`
+		, MIN(IF(T_orders.timeFrom = '00:00:00', NULL, T_orders.timeFrom)) AS `timeFrom`
+		, MAX(T_orders.timeUntil) AS `timeUntil`
+		, GROUP_CONCAT(treatments.treatmentName SEPARATOR ', ') AS `treatmentsNames`
+		, GROUP_CONCAT(orders.treatmentLen SEPARATOR ', ') AS `treatmentsLen`
+		, SUM(IF(workerType = 'fictive',1,0)) as hasfictive
+		, SUM(IF(`orderUnits`.`orderID` IS NULL ,1,0)) as noroom
+		FROM `orders` 			
+		LEFT JOIN orders AS T_orders ON (T_orders.parentOrder = orders.orderID  AND T_orders.parentOrder <> T_orders.orderID)
+		LEFT JOIN `orderUnits` ON(T_orders.`orderID` = `orderUnits`.`orderID`)
+		LEFT JOIN `rooms_units` USING(`unitID`)
+		LEFT JOIN `sites` ON (orders.siteID = sites.siteID)
+		LEFT JOIN treatments ON (T_orders.treatmentID = treatments.treatmentID)
+		LEFT JOIN therapists ON (T_orders.therapistID = therapists.therapistID)
+		WHERE orders.allDay=0  AND orders.parentOrder = orders.orderID /*AND T_orders.timeFrom > 0*/ " ;
+ 
+		$tblName = '`T_orders`';
+		$group = 'parentOrder';
+
+}else{
+
+$que = "SELECT SQL_CALC_FOUND_ROWS `sites`.`siteName`, `orders`.*, GROUP_CONCAT(ru.unitName SEPARATOR ', ') AS `unitNames`
+		FROM `orders` 
+		LEFT JOIN `orderUnits` AS `u` USING(`orderID`)
+		LEFT JOIN `rooms_units` AS `ru` USING(`unitID`)
+		LEFT JOIN `sites` ON (`orders`.`siteID` = `sites`.`siteID`)
+		WHERE allDay=0 ";
+
+		$tblName = '`orders`';
+		$group = 'orderID';
+}
+
+if($_GET['extras']){
+	if(intval($_GET['extras']==1)){ //Has extras
+		$que.= " AND (orders.extras NOT LIKE '%\"total\":0%' AND orders.extras > '')";
+	}else{ //Doesn't have extras
+		$que.= " AND (orders.extras IS NULL OR orders.extras LIKE '%\"total\":0%' OR orders.extras = '')";
+	}
+}
+
+if ($sid && in_array($sid, $_CURRENT_USER->sites()))
+    $que .= " AND `orders`.siteID = " . $sid;
+else
+    $que .= " AND `orders`.siteID IN (" . $_CURRENT_USER->sites(true) . ")";
+
+if ($_GET['orderStatus'] == 'active'){
+    $que .= " AND `orders`.`status` = 1";
+    $title .= " פעילות";
+}
+elseif ($_GET['orderStatus'] == 'cancel'){
+    $que .= " AND `orders`.`status` = 0";
+    $title .= " מבוטלות";
+}
+
+
+
+if ($_GET['orderSign'] == 'done'){
+    $que .= " AND `orders`.approved = 1";
+    $title .= " חתומות";
+}
+elseif ($_GET['orderSign'] == 'incomplete'){
+    $que .= " AND `orders`.approved = 0";
+    $title .= " לחתימה";
+
+    if (!$_GET['from'])
+        $_GET['from'] = date('d/m/Y');
+}
+
+if($_GET['from']){
+	$timeFrom = typemap(implode('-',array_reverse(explode('/',trim($_GET['from'])))),"date");
+	$que.=" AND ".$tblName.".`timeFrom` >= '".$timeFrom." 00:00:00'";
+
+}
+if($_GET['to']){
+	$timeUntil = typemap(implode('-',array_reverse(explode('/',trim($_GET['to'])))),"date");
+	$que.=" AND ".$tblName.".`timeFrom` <= '".$timeUntil." 23:59:59'";
+}
+
+if(!$_GET['from'] && !$_GET['to']){
+    $que.=" AND (".$tblName.".`timeFrom` > NOW() - INTERVAL 1 YEAR OR ".$tblName.".`timeFrom` IS NULL)";
+}
+
+if ($freeText = udb::escape_string(typemap($_GET['free'] ?? '', 'string'))){
+	if($_GET['ordernum']){
+		$que.= " AND orders.orderIDBySite = '".$freeText."'";
+	}else{
+		$list = ['orders.customerName', 'orders.customerEmail', 'orders.customerPhone', 'orders.customerTZ','orders.orderIDBySite'];
+		if($_CURRENT_USER->is_spa()){
+			$list2 = ['`T_orders`.customerName', '`T_orders`.customerEmail', '`T_orders`.customerPhone', '`T_orders`.customerTZ','`T_orders`.orderIDBySite'];
+			$list = array_merge($list, $list2);
+		}
+		$que .= " AND (" . implode(" LIKE '%" . $freeText . "%' OR ", $list) . " LIKE '%" . $freeText . "%')";
+	}
+}
+
+if(strlen($_GET['sourceID'])){
+	if($_GET['sourceID'] == "9999"){
+		$que .= " AND (orders.sourceID = 'spaplus' OR orders.sourceID = 'online')";
+	}else{
+		$que .= " AND orders.sourceID = '" . udb::escape_string($_GET['sourceID']) . "'";
+	}
+}
+
+if ($_GET['otype'] && UserUtilsNew::$orderTypes[$_GET['otype']])
+    $que .= " AND orders.orderType = '" . udb::escape_string($_GET['otype']) . "'";
+
+
+$que.= " GROUP BY orders.".$group;
+
+
+if ($_GET['noroom'] == '1' || $_GET['isfictive'] == '1'){
+	$que .= " HAVING";
+	if ($_GET['noroom'] == '1'){
+		$que1[] .= "  noroom > 0";
+	}
+
+	if ($_GET['isfictive'] == '1'){
+		$que1[] .= " hasfictive > 0";
+	}
+	$que.= implode($que1," AND ");
+}
+
+$que.=" ORDER BY " . ($_GET['sort'] == 'arrive' ? 'orders.`timeFrom` ASC' : ($_GET['sort'] == 'past' ? 'orders.`timeFrom` DESC' : 'orders.`orderID` DESC'));
+
+$pager = new UserPager();
+$pager->setPage(30);
+
+$que.= $pager->sqlLimit();
+
+//echo $que;
+$orders = udb::key_row($que, 'orderID');
+//print_r($orders);
+$pager->setTotal(udb::single_value("SELECT FOUND_ROWS()"));
+
+
+if ($orders){
+    $pays = udb::key_value("SELECT `orderID`, SUM(`sum`) AS `total` FROM `orderPayments` WHERE `complete` = 1 AND `cancelled` = 0 AND `subType` NOT IN ('card_test', 'freeze_sum') AND `orderID` IN (" . implode(',', array_keys($orders)) . ") GROUP BY `orderID` ORDER BY NULL");
+    foreach($orders as $id => &$order)
+        $order['paid'] = $pays[$id] ?? 0;
+    unset($pays, $order);
+}
+
+//possible classes: inputWrap, checkWrap
+
+
+//include "partials/orders_menu.php"; 
+?>
+
+
+
+<div class="searchOrder">
+	<div class="ttl" style="cursor:pointer;margin:-10px;padding:10px" onclick="$('#searchForm').toggleClass('hide');">חפש הזמנות</div>
+	<form method="GET" autocomplete="off" action="" class="hide"  id="searchForm">
+		<input type="hidden" name="page" value="<?=typemap($_GET['page'] ?? 'orders', 'string')?>" />
+        <input type="hidden" name="otype" value="<?=typemap($_GET['otype'] ?? 'order', 'string')?>" />
+<?php
+    if (count($_CURRENT_USER->sites()) > 1){
+        $sname = udb::key_value("SELECT `siteID`, `siteName` FROM `sites` WHERE `siteID` IN (" . $_CURRENT_USER->sites(true) . ")");
+?>
+        <div class="inputWrap">
+            <select name="sid" id="sid" title="שם מתחם">
+                <option value="0">כל המתחמים</option>
+<?php
+        foreach($sname as $id => $name)
+            echo '<option value="' , $id , '" ' , ($id == $sid ? 'selected' : '') , '>' , $name , '</option>';
+?>
+            </select>
+		</div>
+<?php
+    }
+?>
+        <div class="inputWrap">
+            <select name="otype" id="otype" title="">
+                <option value="">הזמנות ושיריונים</option>
+                <option value="order" <?=($_GET['otype'] == 'order' ? 'selected' : '')?>>הזמנות בלבד</option>
+                <option value="preorder" <?=($_GET['otype'] == 'preorder' ? 'selected' : '')?>>שיריונים בלבד</option>
+            </select>
+        </div>
+		<div class="inputWrap">
+			<input type="text" name="from" placeholder="מתאריך" class="searchFrom" value="<?=typemap($_GET['from'], 'string')?>" readonly>
+		</div>
+		<div class="inputWrap">
+			<input type="text" name="to" placeholder="עד לתאריך" value="<?=typemap($_GET['to'], 'string')?>" class="searchTo" readonly>
+		</div>
+		<div class="inputWrap">
+            <select name="orderSign" id="orderSign" title="">
+                <option value="all">הזמנות חתומות ולא חתומות</option>
+                <option value="done" <?=($_GET['orderSign'] == 'done' ? 'selected' : '')?>>הזמנות חתומות בלבד</option>
+                <option value="incomplete" <?=($_GET['orderSign'] == 'incomplete' ? 'selected' : '')?>>הזמנות לחתימה</option>
+			</select>
+		</div>
+		<div class="inputWrap">
+            <select name="orderStatus" id="orderStatus" title="">
+                <option value="all">הזמנות מכל הסטטוסים</option>
+                <option value="active" <?=($_GET['orderStatus'] == 'active' ? 'selected' : '')?>>הזמנות פעילות בלבד</option>
+                <option value="cancel" <?=($_GET['orderStatus'] == 'cancel' ? 'selected' : '')?>>הזמנות מבוטלות בלבד</option>
+            </select>
+		</div>
+		<div class="inputWrap">
+            <select name="sort" id="sort">
+                <option value="all">סדר הזמנות</option>
+                <option value="arrive" <?=($_GET['sort'] == 'arrive' ? 'selected' : '')?>>תאריך רחוק לקרוב</option>
+                <option value="past" <?=($_GET['sort'] == 'past' ? 'selected' : '')?>>תאריך קרוב לרחוק</option>
+            </select>
+		</div>
+		<?if($_CURRENT_USER->is_spa()){?>
+		<div class="inputWrap" >
+            <select name="sourceID" id="sourceID">
+                <option value="">סינון לפי מקור הגעה</option>
+				<option value="0" <?=$_GET['sourceID']=='0' ? "selected":""?>>הזמנה רגילה</option>
+                <option value="9999" <?=($_GET['sourceID'] == '9999' ? 'selected' : '')?>>אונליין ומקור חיצוני</option>
+                <option value="online" <?=$_GET['sourceID']=='online' ? "selected":""?>>הזמנת Online</option>
+						<?
+                        UserUtilsNew::init($_CURRENT_USER->active_site());
+						$cuponTypes = UserUtilsNew::$CouponsfullList;
+						foreach($cuponTypes as $k=>$source) { ?>
+						<option  class="test0"  value="<?=$k?>" <?=$_GET['sourceID']==$k?"selected":""?>><?=$source?></option>
+						<?php }
+                        foreach(UserUtilsNew::guestMember() as $k => $source){
+                            ?>
+                            <option   value="<?=$k?>" <?=$_GET['sourceID']==$k?"selected":""?>><?=$source?></option>
+                        <?php }
+                        foreach(UserUtilsNew::otherSources() as $k => $source){
+                            ?>
+                            <option  value="<?=$k?>" <?=$_GET['sourceID']==$k?"selected":""?>><?=$source?></option>
+                            <?php
+                        }
+                        ?>
+            </select>
+		</div>
+		<div class="inputWrap">
+            <select name="extras" id="extras">
+                <option value="">סינון לפי תוספים בהזמנה</option>
+                <option value="1" <?=($_GET['extras'] == '1' ? 'selected' : '')?>>הזמנות הכוללות תוספים בתשלום</option>
+                <option value="2" <?=($_GET['extras'] == '2' ? 'selected' : '')?>>הזמנות ללא תוספים בתשלום</option>
+            </select>
+		</div>
+		<?}?>
+        <div class="inputWrap">
+            <input type="text" name="free" placeholder="חיפוש חופשי" value="<?=$freeText?>" />
+        </div>
+		<div class="inputWrap checkbox">
+			<input type="checkbox" name="ordernum" <?=($_GET['ordernum'])? "checked" : ""?> value=1 id="isfictive" for="isfictive"><label>חיפוש לפי מספר הזמנה בלבד</label>
+		</div>
+		<?if($_CURRENT_USER->is_spa()){?>
+		<div class="inputWrap checkbox">
+			<input type="checkbox" name="noroom" <?=($_GET['noroom'])? "checked" : ""?> value=1 id="noroom"><label for="noroom">ללא חדר</label>
+		</div>
+		
+		<div class="inputWrap checkbox">
+			<input type="checkbox" name="isfictive" <?=($_GET['isfictive'])? "checked" : ""?> value=1 id="isfictive" for="isfictive"><label>עם מטפל פיקטיבי</label>
+		</div>
+		<?}?>
+		<a class="clear" href="?page=<?=$_GET['page']?>">נקה</a>
+		<input type="submit" value="חפש">
+		
+	</form>	
+</div>
+<style>
+.inputWrap.checkbox{display:flex;height:40px;align-items:center}
+.inputWrap.checkbox input{width:30px;height:30px;margin-left:6px}
+.inputWrap.checkbox label{cursor:pointer}
+</style>
+ <?php echo $pager->render() ?>
+
+<section class="orders">
+	<div class="last-orders">
+		<div class="title"><?=$title?></div>
+		<div class="items">
+			<?php foreach($orders as $order) { 
+			orderComp($order);
+			} ?>
+		</div>
+	</div>
+</section>
+
+
+========================================
+File Path: C:\Users\Ben Swissa\Desktop\backup\Employee - Spa Plus\user\pages\prices.php
+----------------------------------------
+<?
+$que = "SELECT sites.siteID, sites.siteName FROM sites WHERE `sites`.`siteID` IN (" . $_CURRENT_USER->sites(true) . ")";
+$sites = udb::full_list($que);
+
+
+?>
+<div class="tabs">
+	<? foreach($sites as $site){?>
+		<div id="tab<?=$site["siteID"]?>" onclick="changeTab(<?=$site["siteID"]?>)" class="tab <?=$site["siteID"]==SITE_ID? "active" : ""?>"><?=$site["siteName"]?></div>
+	<?}?>
+</div>
+
+<iframe id="prices" src="prices.php?asite=<?=SITE_ID?>" ></iframe>
+
+<style>
+.tabs {font-size: 0;margin: 10px;white-space: nowrap;text-align: center;overflow: auto;}
+.tabs .tab {display: inline-block;line-height: 30px;padding: 0 8px;margin: 3px 2px;background: #cfeef0;border-radius: 10px;font-size: 16px;color: #0dabb6;text-decoration: none;border: 1px #0dabb6 solid;cursor:pointer}
+.tabs .tab.active {color: white;background: #0dabb6;}
+#prices{position: absolute;width: 100%;top: 60px;bottom: 0;left: 0;height: calc(100vh - 60px);}
+
+@media(max-width:992px){
+#prices{top: 200px;bottom: 0;left: 0;height: calc(100vh - 200px);}
+}
+</style>
+<script>
+function changeTab(siteid){
+	var tab = "#tab"+siteid;
+	$(".tab").removeClass('active');
+	$(tab).addClass('active');
+	$('#prices').attr('src','prices.php?asite='+siteid);
+}
+</script>
+
+========================================
+File Path: C:\Users\Ben Swissa\Desktop\backup\Employee - Spa Plus\user\pages\reviews.php
+----------------------------------------
+<?php
+/**
+ * @var TfusaBaseUser $_CURRENT_USER
+ */
+$sid = intval($_GET['sid']) ?: $_CURRENT_USER->select_site();
+if($sid && !$_CURRENT_USER->has($sid)){
+    echo 'Access denied';
+    return;
+}
+
+//$sid = intval($_GET['sid'])?intval($_GET['sid']):$_CURRENT_USER->active_site();
+//if ($sid && !in_array($sid, $_CURRENT_USER->sites()))
+//    $sid = 0;
+
+$timeFrom = typemap(implode('-',array_reverse(explode('/',trim($_GET['from'] ?? date('d/m/Y',strtotime("-90 days")))))),"date");
+$timeTill = typemap(implode('-',array_reverse(explode('/',trim($_GET['to'] ?? date('t/m/Y'))))),"date");
+
+$where = ["h.siteID IN (" . ($sid ? $sid : $_CURRENT_USER->sites(true)) . ")", "h.created BETWEEN '" . $timeFrom . " 00:00:00' AND '" . $timeTill . " 23:59:59'"];
+
+if ($freeText = udb::escape_string(typemap($_GET['free'] ?? '', 'string'))){
+    $list = ['name', 'email', '`h`.title', '`h`.text'];
+    $where[] = "(" . implode(" LIKE '%" . $freeText . "%' OR ", $list) . " LIKE '%" . $freeText . "%')";
+}
+
+$pager = new UserPager();
+$pager->setPage(50);
+
+//$paysWhere = $_CURRENT_USER->access(TfusaUser::ACCESS_BIT_ADMIN) ? "" : " AND orders.therapistID = " . $_CURRENT_USER->id();
+if (!$_CURRENT_USER->access(TfusaUser::ACCESS_BIT_ADMIN))
+    $where[] = "orders.therapistID = " . $_CURRENT_USER->id();
+
+$que = "SELECT SQL_CALC_FOUND_ROWS h.*,orders.orderID, files.src AS document FROM `reviews` AS `h` LEFT JOIN orders USING (orderID) LEFT JOIN files ON (files.ref=h.reviewID AND files.table = 'reviews') WHERE " . implode(' AND ', $where) . " ORDER BY h.created DESC " . $pager->sqlLimit();
+//echo $que;
+$pays = udb::key_row($que, 'reviewID');
+$pager->setTotal(udb::single_value("SELECT FOUND_ROWS()"));
+
+//print_r($pays);
+
+$sname = udb::key_value("SELECT `siteID`, `siteName` FROM `sites` WHERE `siteID` IN (" . $_CURRENT_USER->sites(true) . ")");
+?>
+<div class="searchOrder">
+	<div class="ttl" style="cursor:pointer;margin:-10px;padding:10px" onclick="$('#searchForm').toggleClass('hide');">חפש חוות דעת</div>
+	<form method="GET" autocomplete="off"  action="" class="hide"  id="searchForm">
+		<input type="hidden" name="page" value="reviews" />
+        <!-- input type="hidden" name="otype" value="<?=typemap($_GET['otype'] ?? 'order', 'string')?>" />
+        <div class="inputWrap">
+            <select name="yaadtype" id="yaadtype" title="">
+                <option value="">כל הסוגים</option>
+                <option value="order" <?=($_GET['otype'] == 'order' ? 'selected' : '')?>>הזמנות בלבד</option>
+                <option value="preorder" <?=($_GET['otype'] == 'preorder' ? 'selected' : '')?>>שיריונים בלבד</option>
+            </select>
+        </div -->
+<?php
+    if (count($_CURRENT_USER->sites()) > 1){
+?>
+        <div class="inputWrap">
+            <select name="sid" id="sid" title="שם מתחם">
+                <option value="0">כל המתחמים</option>
+<?php
+        foreach($sname as $id => $name)
+            echo '<option value="' , $id , '" ' , ($id == $sid ? 'selected' : '') , '>' , $name , '</option>';
+?>
+            </select>
+		</div>
+<?php
+    }
+?>
+		<div class="inputWrap">
+			<input type="text" name="from" placeholder="מתאריך" class="searchFrom" value="<?=implode('/',array_reverse(explode('-',trim($timeFrom))))?>" readonly>
+		</div>
+		<div class="inputWrap">
+			<input type="text" name="to" placeholder="עד לתאריך" value="<?=implode('/',array_reverse(explode('-',trim($timeTill))))?>" class="searchTo" readonly>
+		</div>
+        <div class="inputWrap">
+            <input type="text" name="free" placeholder="חיפוש חופשי" value="<?=$freeText?>" />
+        </div>
+
+		<a class="clear" href="?page=<?=$_GET['page']?>">נקה</a>
+		<input type="submit" value="חפש">
+
+	</form>
+</div>
+<?php
+    $asid = $sid ?: $_CURRENT_USER->active_site();
+?>
+<?if($_CURRENT_USER->access(TfusaUser::ACCESS_BIT_ADMIN)){?>
+
+<div class="health_send">
+	<? if (count($_CURRENT_USER->sites()) > 1){?>
+	<div class="site-select">
+		בחר מתחם
+		<select id="send-site" title="שם מתחם">
+			<option value="0">לאיזה מתחם לשלוח</option>
+			<?php
+        foreach($sname as $id => $name)
+            echo '<option value="' , $id , '" ' , ($id == $sid ? 'selected' : '') , '>' , $name , '</option>';
+		?>
+        </select>
+	</div>
+		<?foreach($sname as $id => $name){?>
+		<div class="site-line" id="site-send<?=$id?>" style="display:<?=($id == $sid && $sid>0)? "block" : "none"?>">
+			<div class="send_btn plusWrapper">שליחת חו"ד <div class="plusSend"  data-title="שליחת חוות דעת" data-msg="שלום לך, לאחר שהותך ב-<?=$name?>, נשמח לקבל את חוות דעתך. למילוי חוות דעת : https://bizonline.co.il/review.php?siteID=<?=$id?>" data-subject="בקשה למילוי חוות דעת <?=$name?>"></div></div>
+			<a class="send_btn" href="/review.php?siteID=<?=$id?>/" target="_blank">קישור למילוי חו"ד</a>
+		</div>
+		<?}?>
+	<?}else{?>
+		<div class="send_btn plusWrapper">שליחת חו"ד <div class="plusSend" data-title="שליחת חוות דעת" data-mail-file="/user/mails/rate.php?siteID=<?=5?>" data-msg="לחצו למילוי חוות דעת <?=$sname[$asid]?> https://bizonline.co.il/review.php?siteID=<?=$asid?>" data-subject="חוות דעת <?=$sname[$asid]?>"></div></div>
+		<a class="send_btn" href="/review.php?siteID=<?=$asid?>" target="_blank">קישור למילוי חו"ד</a>
+	<?}?>
+
+</div>
+<?}?>
+<section class="orders">
+	<div class="last-orders" >
+		<div class="title">
+
+		</div>
+        <?php echo $pager->render() ?>
+		<div class="pay_order yaadTrans">
+			<div class="payments">
+				<div class="title"><?=$pager->items_total?> חוות דעת</div>
+<?php
+
+    foreach($pays as $pay){
+?>
+				<div class="review">
+
+
+						<div class="userData">
+							<div class="topData"><?=date("d.m.y H:i",strtotime($pay['created']));?> <?=(count($_CURRENT_USER->sites()) > 1)? $sname[$pay["siteID"]] : ""?></div>
+							<b><?=$pay['name']?></b> <span><b><?=$pay['avgScore']?></b>/5</span>
+                            <span class="add-com" style="margin-left:10px;"><a data-id="<?=$pay['reviewID']?>"><?=($pay['ownComment']) ? 'ערוך' : 'הוסף';?> תגובה</a></span>
+						</div>
+						<div class="reviewText">
+							<?if($pay["orderID"]){?><div class="showOrder" onclick="window.openFoo.call(window, {'orderID':<?=$pay["orderID"]?>})">הצג הזמנה</div><?}?>
+							<?if($pay["document"]){?><div class="showOrder" onclick="openDoc('<?=$pay["document"]?>')">הצג אסמכתא</div><?}?>
+							<div class="revtitle"><?=$pay['title']?></div>
+							<div class="text"><?=nl2br($pay['text'])?></div>
+                            <?if($pay['ownComment'] ){?><div class="text comment"><div class="revtitle">תגובה</div><?=nl2br($pay['ownComment'])?></div><?}?>
+						</div>
+
+				</div>
+
+<?php
+    }
+?>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+<style>
+body .pay_order.yaadTrans {max-width: 600px;position: relative;margin: auto;left: 0;right: 0;background: white;padding: 10px;z-index:1;box-sizing:border-box}
+.pay_order.yaadTrans .payments>.item {margin-top: 36px;}
+.pay_order .payments>.item .payTop {margin-top: -20px;position: absolute;background: #0dabb6;color: white;display: block;width: 100%;height: 20px;font-size: 14px;line-height: 20px;padding: 0 10px;box-sizing: border-box;}
+.pay_order .payments>.item .payTop .name {float:right}
+.pay_order .payments>.item .payTop .stats {float:left;font-size:14px}
+#saveComment {cursor: pointer;
+    display: inline-block;
+    padding: 0 10px;
+    line-height: 30px;
+    color: white;
+    border-radius: 10px;
+    background: #0dabb6;
+    margin-bottom: 10px;    font-size: 14px;}
+#ownComment {width:100%;height:120px;border:1px solid #000000;}
+.text.comment {padding:10px;}
+</style>
+<!--Pop comment review-->
+<div class="sendPop" id="addcomm" style="display: none;">
+    <input type="hidden" id="reviewID" value="0">
+    <div class="container">
+        <div class="close" onclick="$('.sendPop').fadeOut('fast')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21" width="21" height="21"><path class="shp0" d="M1.3 1.3C1.8 0.9 2.5 0.9 2.9 1.3L11 9.4 19.1 1.3C19.5 0.9 20.2 0.9 20.7 1.3 21.1 1.8 21.1 2.5 20.7 2.9L12.6 11 20.7 19.1C21.1 19.5 21.1 20.2 20.7 20.7 20.4 20.9 20.2 21 19.9 21 19.6 21 19.3 20.9 19.1 20.7L11 12.6 2.9 20.7C2.7 20.9 2.4 21 2.1 21 1.8 21 1.5 20.9 1.3 20.7 0.9 20.2 0.9 19.5 1.3 19.1L9.4 11 1.3 2.9C0.9 2.5 0.9 1.8 1.3 1.3Z"></path></svg></div>
+        <div class="title mainTitle" id="SendPopTitle">הוספה/עריכת תגובה</div>
+        <div class="content">
+            <div class="lines">
+                <div class="line">
+                    <textarea name="ownComment" id="ownComment" placeholder="תגובה"></textarea>
+                </div>
+                <div class="line">
+                    <div class="signOpt">
+                        <a   id="saveComment">שמירה</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Pop eomment review ends-->
+<script>
+    $(".add-com a").on("click",function(){
+        var id = $(this).data("id");
+        $.post("ajax_global.php",{
+            act: 'ownComment',
+            id: id
+        },function(response){
+            try {
+                var json = JSON.parse(response);
+            } catch (e) {
+                var json = response;
+            }
+            $("#reviewID").val(id);
+            $("#ownComment").val(response.text);
+            $("#addcomm").show();
+
+        });
+
+    });
+
+    $("#saveComment").on("click",function(){
+        $.post("ajax_global.php",{
+            act: 'ownComment',
+            id: $("#reviewID").val(),
+            ownComment: $("#ownComment").val()
+        },function(response){
+
+            $("#reviewID").val("0");
+            $("#ownComment").val("");
+            $("#addcomm").hide();
+
+        });
+    });
+</script>
+
+<script>
+$('.plusWrapper').click(function(){
+	$(this).find('.plusSend').trigger('click');
+});
+
+
+
+$('#send-site').change(function(){
+	$(this).closest(".health_send").find('.site-line').hide();
+	if(this.value>0){
+		$(this).closest(".health_send").find('#site-send'+parseInt(this.value)).show();
+
+	}
+});
+
+
+
+</script>
+
+========================================
+File Path: C:\Users\Ben Swissa\Desktop\backup\Employee - Spa Plus\user\pages\stats.php
+----------------------------------------
+<?
+function htmlDate($date){
+    return implode('/', array_reverse(explode('-', $date)));
+}
+$clearUrl = '?page=stats';
+$siteDomains = udb::single_column("select distinct domainID from sites_domains where active=1 and siteID=" .  $_CURRENT_USER->active_site());
+if(!$siteDomains) $siteDomains = [0];
+if(in_array(8,$siteDomains)) {
+    $siteDomains[] = 7;
+}
+$domainsList = udb::key_row("SELECT * FROM domains where domainURL!='' and domainID in (".implode(",",$siteDomains).") and domainID!=1 ","domainID");
+
+
+
+function formatPhoneNumber($num){
+    if(substr($num,0,2) == "05") {
+        return substr($num,0,3) . "-" . substr($num,3);
+    }
+    return substr($num,0,2) . "-" . substr($num,2);
+}
+
+//$sitesP = udb::key_row("SELECT siteID,portalsID FROM sites where portalsID > 0 ","portalsID");
+//$sitesZ = udb::key_row("SELECT siteID,zimmersID FROM sites where zimmersID > 0 ","zimmersID");
+
+
+// copy ends
+
+$free = udb::escape_string($_GET['free']);
+$domainID = udb::escape_string($_GET['domainID']);
+
+
+$where = " 1 = 1 ";
+if($free) $where.=" AND sites.siteName LIKE '%".$free."%' ";
+if($domainID) {
+    $where .= ' AND sites_domains.domainID='.$domainID ;
+}
+else {
+    //$where .= ' AND sites_domains.domainID=1';
+}
+$where .= ' AND sites.siteID= ' . $_CURRENT_USER->active_site();
+$wheret = $wherec = $wherew = $wherem =  ' siteID = ' . $_CURRENT_USER->active_site();
+
+
+if($_GET['createDate']) {
+    if($_GET['createDateTo']) {
+        $useDate = implode('-',array_reverse(explode('/',trim($_GET['createDate']))));
+        $useDate2 = implode('-',array_reverse(explode('/',trim($_GET['createDateTo']))));
+        $useDate  =  date("Y-m-d",strtotime($useDate));
+        $useDate2  =  date("Y-m-d",strtotime($useDate2));
+        if($_GET['createDateTo'] == $_GET['createDate']) {
+            $wheret.= " AND STR_TO_DATE(sites_clicks.datetime,'%Y-%m-%d')=STR_TO_DATE('".$useDate."','%Y-%m-%d') ";
+            $wherec.= " AND STR_TO_DATE(contactForm.created,'%Y-%m-%d')=STR_TO_DATE('".$useDate."','%Y-%m-%d') ";
+            $wherew.= " AND DATE_FORMAT(contact_whatsapp.created,'%Y-%m-%d')=DATE_FORMAT('".$useDate."','%Y-%m-%d') ";
+            $wherem.= " AND  STR_TO_DATE(maskyooCalls.start_call,'%Y-%m-%d')='".$useDate."'";
+        }
+        else {
+            $wheret.= " AND STR_TO_DATE(sites_clicks.datetime,'%Y-%m-%d') BETWEEN  STR_TO_DATE('".$useDate."','%Y-%m-%d') AND STR_TO_DATE('".$useDate2."','%Y-%m-%d')";
+            $wherec.= " AND STR_TO_DATE(contactForm.created,'%Y-%m-%d') BETWEEN  STR_TO_DATE('".$useDate."','%Y-%m-%d') AND STR_TO_DATE('".$useDate2."','%Y-%m-%d')";
+            $wherew.= " AND DATE_FORMAT(contact_whatsapp.created,'%Y-%m-%d') BETWEEN  DATE_FORMAT('".$useDate."','%Y-%m-%d') AND DATE_FORMAT('".$useDate2."','%Y-%m-%d')";
+            $wherem.= " AND maskyooCalls.start_call BETWEEN  '".$useDate."' AND '".$useDate2."'";
+        }
+
+    }
+    else {
+        $useDate = implode('-',array_reverse(explode('/',trim($_GET['createDate']))));
+        $wheret.= " AND STR_TO_DATE(sites_clicks.datetime,'%Y-%m-%d') >= '".$useDate."'";
+        $wherec.= " AND STR_TO_DATE(contactForm.created,'%Y-%m-%d') >= '".$useDate."'";
+        $wherew.= " AND DATE_FORMAT(contact_whatsapp.created,'%Y-%m-%d') >= '".$useDate."'";
+        $wherem.= " AND STR_TO_DATE(maskyooCalls.start_call,'%Y-%m-%d') >= '".$useDate."'";
+    }
+
+}
+else {
+    if($_GET['createDateTo']) {
+        $useDate  =  implode('-',array_reverse(explode('/',trim($_GET['createDateTo']))));
+        $wheret.= " AND STR_TO_DATE(sites_clicks.datetime,'%Y-%m-%d') <= '".$useDate."'";
+        $wherec.= " AND STR_TO_DATE(contactForm.created,'%Y-%m-%d') <= '".$useDate."'";
+        $wherew.= " AND DATE_FORMAT(contact_whatsapp.created,'%Y-%m-%d') <= '".$useDate."'";
+        $wherem.= " AND STR_TO_DATE(maskyooCalls.start_call,'%Y-%m-%d') <= '".$useDate."'";
+    }
+}
+
+if($domainID) {
+    $sql = "SELECT siteID, `type`, COUNT(*) FROM sites_clicks WHERE ".$wheret." AND sites_clicks.type IN ('whatsapp', 'phone', 'showphone') AND sites_clicks.domainID=".$domainID." GROUP BY siteID, `type`";
+    $qsites = udb::key_list($sql,  ['siteID', 'type'], 2);
+//	echo $sql;
+//	print_r($qsites);
+
+} else {
+    $qsites = udb::key_list("SELECT siteID, `type`, COUNT(*) FROM sites_clicks WHERE ".$wheret." AND sites_clicks.type IN ('whatsapp', 'phone', 'showphone') GROUP BY siteID, `type`",  ['siteID', 'type'], 2);
+
+}
+$sites = udb::full_list("SELECT distinct(sites_domains.siteID) , sites.siteName,sites.portalsID,sites.zimmersID FROM sites_domains left join sites using (siteID) WHERE $where");
+?>
+<div class="manageItems" id="manageItems">
+    <h1>סטטיסטיקות</h1>
+
+    <div class="searchOrder">
+        <div class="ttl">חפש פעולות</div>
+        <form method="GET" autocomplete="off" >
+            <input type="hidden" name="page" value="stats">
+            <?
+            $createDate = $_GET['createDate'];
+            $createDateTo = $_GET['createDateTo'];
+            ?>
+            <div class="inputWrap half">
+                <input type="text" name="createDate" placeholder="תאריך מ" class="searchFrom2" value="<?=implode('/',array_reverse(explode('-',trim($createDate))))?>" readonly>
+            </div>
+            <div class="inputWrap half">
+                <input type="text" name="createDateTo" placeholder="תאריך עד" class="searchFrom2" value="<?=implode('/',array_reverse(explode('-',trim($createDateTo))))?>" readonly>
+            </div>
+            <div class="inputWrap" style="display: none;">
+                <select name="domainID">
+                    <option value="0"<?php if(!$domainID) { ?>selected<?php } ?>>כללי</option>
+                    <?
+                    foreach ($domainsList as $domain) {
+                        ?><option value="<?=$domain['domainID']?>"<?php if($domainID == $domain['domainID']) echo ' selected'?>><?=$domain['domainName']?></option><?
+                    }
+                    ?>
+
+
+                </select>
+            </div>
+            <div  class="inputWrap">
+                <select name="type">
+                    <option value="0">סוג המידע</option>
+                    <option <?=$_GET['type'] == 'whatsappstart' ? ' selected ' : ''; ?>  value="whatsappstart">התחלת שיחת וואטסאפ</option>
+                    <option <?=$_GET['type'] == 'maskyoocall' ? ' selected ' : ''; ?>  value="maskyoocall">שיחות מסקיו</option>
+                    <option <?=$_GET['type'] == 'contacts' ? ' selected ' : ''; ?>  value="contacts">לידים יצירת קשר</option>
+                </select>
+            </div>
+
+            <a class="clear" href="<?=$clearUrl?>">נקה</a>
+            <input type="submit" value="חפש">
+
+        </form>
+    </div>
+
+
+    <div class="counter"></div>
+    <table class="stats-table">
+        <thead>
+        <tr>
+            <td>שם המתחם</td>
+            <!--<td data-type="whatsappclick">הקלקות ווטסאפ</td>-->
+            <td data-type="whatsappstart">התחלת שיחת וואטסאפ</td>
+            <!--<td data-type="phonedisplay">הצגת טלפון</td>-->
+            <!--<td data-type="phones">טלפון</td>-->
+            <td  data-type="maskyoocall">שיחות מסקיו</td>
+            <td data-type="contacts">לידים יצירת קשר</td>
+
+        </tr>
+        </thead>
+        <tbody id="sortRow">
+        <?php
+
+        if (count($sites)){
+            $i=0;
+            $adding = '';
+            if($domainID) $adding = '  domainID='.$domainID . " AND ";
+            $conForm = udb::key_row("SELECT COUNT(*) as Total,siteID FROM contactForm WHERE ".$adding.$wherec ." group by siteID","siteID");
+            $conWhatsapp = udb::key_row("SELECT COUNT(*) as Total,siteID FROM contact_whatsapp WHERE ".$adding.$wherew." group by siteID","siteID");
+            $maskyooSql = "SELECT COUNT(*) as Total,siteID FROM maskyooCalls WHERE ".$adding.$wherem." group by siteID";
+            $maskyoo = udb::key_row($maskyooSql,"siteID");
+            //echo "SELECT COUNT(*) as Total,siteID FROM contactForm WHERE ".$adding.$wherec ." group by siteID";
+            //print_r($maskyoo);
+            //exit;
+
+
+            $sitesCount = 0;
+            foreach($sites as  $site) {
+
+                // $whatsapp = udb::single_value("SELECT COUNT(type) FROM sites_clicks WHERE type='whatsapp' AND siteID=".$site['siteID']);
+                // $showphone = udb::single_value("SELECT COUNT(type) FROM sites_clicks WHERE type='showphone' AND siteID=".$site['siteID']);
+                // $phone = udb::single_value("SELECT COUNT(type) FROM sites_clicks WHERE type='phone' AND siteID=".$site['siteID']);
+                if($domainID && $domainID == 9) {
+                    if(!$site['zimmersID']) continue;
+                }
+                if($domainID && ($domainID == 7 || $domainID == 8)) {
+                    if(!$site['portalsID']) continue;
+                }
+                $sitesCount++;
+                ?>
+                <tr id="<?=$site['siteID']?>">
+                    <td><?=$site['siteName']?></td>
+                    <!--<td><?=$qsites[$site['siteID']]['whatsapp'][0]['COUNT(*)']?$qsites[$site['siteID']]['whatsapp'][0]['COUNT(*)']:0?></td>-->
+                    <td><?=intval($conWhatsapp[$site['siteID']]['Total'])?></td>
+                    <!--<td><?=$qsites[$site['siteID']]['showphone'][0]['COUNT(*)']?$qsites[$site['siteID']]['showphone'][0]['COUNT(*)']:0?></td>-->
+                    <!--<td><?=$qsites[$site['siteID']]['phone'][0]['COUNT(*)']?$qsites[$site['siteID']]['phone'][0]['COUNT(*)']:0?></td>-->
+                    <td><?=$maskyoo[$site['siteID']] ? $maskyoo[$site['siteID']]['Total'] : 0?></td>
+                    <td><?=$conForm[$site['siteID']]? $conForm[$site['siteID']]['Total'] : 0?></td>
+                </tr>
+                <?php
+            }
+        }
+        ?>
+        </tbody>
+    </table>
+    <?if($_GET['type']) {?>
+        <div class="detailed-lists">
+        <?
+        require __DIR__ . '/../partials/stats/' . $_GET['type'] . '.php';
+        ?>
+        </div><?}?>
+</div>
+<input type="hidden" id="orderResult" name="orderResult" value="">
+
+<style>
+    .stats-table{border-collapse:collapse;background:white;margin:20px auto}
+    .stats-table thead td{font-weight:bold}
+    .stats-table td{border:1px #ccc solid;padding:5px}
+
+
+    .detailed-lists table{border-collapse:collapse;background:white;margin:20px auto}
+    .detailed-lists table thead td{font-weight:bold}
+    .detailed-lists table td, .detailed-lists table th{border:1px #ccc solid;padding:5px}
+</style>
+
+
+<script>
+    $('.searchFrom2').datepicker({
+        format: 'd/m/Y',
+        timepicker: false
+
+    });
+    $('.searchTo2').datepicker({
+        format: 'd/m/Y',
+        onShow:function( ct ){
+            this.setOptions({
+                minDate:$('.searchFrom2').val()?$('.searchFrom2').val().split("/").reverse().join("-"):false
+            })
+        },
+        timepicker: false
+    });
+
+
+
+
+    var pageType="<?=$pageType?>";
+    $(".counter").html( "<?=$sitesCount?> רשומות" );
+    function openPop(pageID, siteName){
+        $(".pagePopCont").html('<iframe id="frame_'+pageID+'" frameborder=0 src="/cms/moduls/minisites/frame.dor.php?siteID='+pageID+'&siteName='+encodeURIComponent(siteName)+'&tab=1"></iframe><div class="tabCloser" onclick="closeTab(\'frame_'+pageID+'\')">x</div>');
+        $(".pagePop").show();
+    }
+    function closeTab(){
+        $(".pagePopCont").html('');
+        $(".pagePop").hide();
+    }
+
+
+
+
+    function search_table(){
+        // Declare variables
+        var input, filter, table, tr, td, i;
+        input = document.getElementById("searchinTbl");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("resTable");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those who don't match the search query
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td") ;
+            for(j=0 ; j<td.length ; j++)
+            {
+                let tdata = td[j] ;
+                if (tdata) {
+                    if (tdata.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                        break ;
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .manageItems table > thead > tr > th, .manageItems table > thead > tr > td {width:auto !important}
+    .counter {position: relative;display: block;text-align: left;}
+    .searchOrder {margin: 20px auto 0;display: block;padding: 13px 30px;border: 1px solid #0dabb6;border-radius: 8px;background: #fff;left: 0;right: 0;position: relative;max-width: 240px;overflow: hidden;}
+    .searchOrder form {margin-top: 10px;}
+    .searchOrder form .inputWrap {margin: 5px;}
+    .searchOrder form .inputWrap input[type=text] {height: 40px;box-sizing: border-box;padding-right: 10px;font-size: 16px;border: 1px #ccc solid;border-radius: 5px;width: 100%;}
+    .searchOrder form .clear {text-decoration: none;font-size: 16px;display: inline-block;vertical-align: top;background: #fff;color: #0dabb6;border-radius: 5px;margin: 5px;border: 1px #0dabb6 solid;float: right;line-height: 40px;width: 60px;text-align: center;}
+    .searchOrder form input[type=submit] {display: block;vertical-align: top;background: #0dabb6;color: #fff;border-radius: 5px;cursor: pointer;margin: 5px;width: 100px;float: left;font-size: 20px;line-height: 40px;}
+    .searchOrder form .inputWrap select {height: 40px;box-sizing: border-box;padding-right: 10px;font-size: 16px;border: 1px #ccc solid;border-radius: 5px;text-align: right;width: 100%;}
+    #searchinTbl{
+        height: 40px;
+        box-sizing: border-box;
+        padding-right: 10px;
+        font-size: 16px;
+        border: 1px #ccc solid;
+        border-radius: 5px;
+        width: 100%;
+    }
+</style>
+
+========================================
+File Path: C:\Users\Ben Swissa\Desktop\backup\Employee - Spa Plus\user\pages\vilasavail.php
+----------------------------------------
+<?
+function apiCallGET($act = "" , $siteID = 0){
+    $url = "https://www.vila.co.il/api/data-for-biz.php?key=avg142f2g!00a&act=".$act."&siteid=".$siteID;
+    $curlSend = curl_init();
+
+    curl_setopt($curlSend, CURLOPT_URL, $url);
+    curl_setopt($curlSend, CURLOPT_RETURNTRANSFER, 1);
+
+    $curlResult = curl_exec($curlSend);
+    $curlStatus = curl_getinfo($curlSend, CURLINFO_HTTP_CODE);
+    curl_close($curlSend);
+    if ($curlStatus === 200)
+        return json_decode($curlResult,true);
+    else
+        return [];
+}
+
+function apiCallPOST($act = "" , $siteID = 0 ){
+    $url = "https://www.vila.co.il/api/data-for-biz.php?key=avg142f2g!00a&act=".$act."&siteid=".$siteID;
+    $ch = curl_init();
+
+    curl_setopt($ch, CURLOPT_URL,$url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+//    curl_setopt($ch, CURLOPT_POSTFIELDS,
+//        "postvar1=value1&postvar2=value2&postvar3=value3");
+
+    // In real life you should use something like:
+     curl_setopt($ch, CURLOPT_POSTFIELDS,
+              http_build_query($_POST, '', '&'));
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $server_output = curl_exec($ch);
+        $curlStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+    if ($curlStatus === 200)
+        return json_decode($server_output,true);
+    else
+        return [];
+}
+
+$sql = "select portalsID from sites where siteID=".$_CURRENT_USER->active_site();
+
+$portalsID =  udb::single_value($sql);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $period = $_POST['period'];
+
+    $updateResponse  = apiCallPOST("updateAvail",$portalsID);
+}
+
+echo '<h2>הגדרות זמינות לאתרי וילה פור יו ווילה</h2>';
+print_r($updateResponse);
+if(!$portalsID) {
+    echo 'לא מחובר לאתרי וילה ווילה פור יו';
+    return;
+}
+$periodHtml = apiCallGET('getperiods',$portalsID);
+?>
+<style>
+.table-wrap {display: table;margin: 10px auto;}
+.line{display:table-row}
+.line * {display: table-cell;padding: 2px 5px;text-align: right;border: 1px #ccc solid;background: white;}
+.line * input[type=checkbox]{width:20px;height:20px}
+.frees > input[type=submit]{background:green;color:white;padding:10px}
+.frees > input[type=submit] {background: #0dabb6;color: white;height: 40px;padding: 0 20px;font-size: 18px;border-radius: 5px;}
+</style>
+
+<?
+echo $periodHtml['html'];

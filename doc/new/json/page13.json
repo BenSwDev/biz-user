@@ -1,0 +1,47 @@
+{
+  "pageTitle": "13. יצירת הזמנה (וריאציה) – orders.php",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "קובץ orders.php משרת מספר מטרות, ובין היתר משמש ליצירת הזמנה חדשה (כפי שמופיע בתפריט עבור עמוד 13). המשתמש מגיע עם פרמטרים GET כגון ?page=orders וייתכן שמבצע הוספת הזמנה דרך הטופס המוכל בקובץ."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך orders",
+      "content": "<ul>\n<li><code>orders.php</code> – עמוד המכיל חיפוש והצגת הזמנות, וגם לוגיקה להוספה חדשה.\n<li><code>UserUtilsNew.php</code> – משמש לזיהוי מקור הגעה (sourceID), אם קיים.</li>\n<li><code>orderComp()</code> (ייתכן בקובץ functions או בקובץ עזר) – מציג כל הזמנה בכרטיסיה ויזואלית.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>ajax_client.php</code> או <code>ajax_order.php</code> לא נראים פה ישירות, אבל הגיוני שישנם לביצוע Ajax.</li>\n<li><code>biz_users</code> – טבלת DB שאולי קשורה להתראות (alerts_count).</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד orders (וריאציה יצירת הזמנה)",
+      "content": "בהתאם לקוד, הנה מספר תרחישים:",
+      "subSections": [
+        {
+          "title": "תרחיש 1: כניסה לעמוד על מנת להוסיף הזמנה חדשה",
+          "content": "<ol>\n<li>URL ?page=orders או לחיצה על 'הוסף' בתפריט/כפתור.</li>\n<li>הקוד מזהה שלא סופקו פרמטרים חיפוש, יכול להציג טופס חדש.</li>\n<li>המשתמש ממלא פרטים (שם לקוח, תאריך timeFrom, וכו’).</li>\n<li>נשלח לטופס POST או Ajax שמוסיף רשומה ל־orders.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 2: שמירת ההזמנה",
+          "content": "<ol>\n<li>בקוד אין בדיוק מתואר שמירת POST בקובץ זה, אך הגיוני שיש block 'if ($_POST...)'.</li>\n<li>המידע נכנס לטבלת orders (INSERT) כולל siteID, customerName וכו’.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 3: הצגת ההזמנה לאחר היצירה",
+          "content": "<ol>\n<li>לאחר ההוספה, <code>orderComp(\n$order)</code> מציג כרטיסיית הזמנה עם פרטי הלקוח.</li>\n<li>ניתן לראות פרטים וכפתורי עריכה / מחיקה, בהתאם להרשאות.</li>\n</ol>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך orders (וריאציה)",
+      "content": "<ul>\n<li><code>orders.php</code> עצמו.</li>\n<li><code>UserUtilsNew.php</code> מפורט בחלקו לקביעת sourceID.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li><code>ajax_order.php</code> – לא מופיע בקוד, אך ייתכן משלים CRUD להזמנה.</li>\n<li><code>auth.php</code> – אימות משתמש.</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (orders – יצירת הזמנה)",
+      "content": "בגרסה זו של עמוד 13, הפוקוס הוא על מוסיף הזמנה דרך orders.php. המשתמש ממלא פרטים, נוצרה רשומה ב־DB, ומשם ניתן להציג/לערוך הזמנה."
+    }
+  ]
+}

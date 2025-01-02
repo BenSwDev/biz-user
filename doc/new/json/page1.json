@@ -1,0 +1,50 @@
+{
+  "pageTitle": "1. מסך ראשי (home)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "הקובץ home.php מהווה את עמוד הבית (מסך ראשי) של המערכת. הוא בודק את האתר הפעיל של המשתמש (siteID), טוען נתוני הזמנות/טיפולים/סטטיסטיקות בהתאם, ומציג ממשק מרכזי הכולל כפתורי פעולה (למשל: יצירת הזמנה חדשה, גישה ליומן תפוסה, הצגת סיכומי הזמנות לתקופות שונות, ורשימות של הזמנות אחרונות/קרובות)."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך home",
+      "content": "<ul>\n<li><code>home.php</code> – קובץ העמוד הראשי, נטען כברירת מחדל לאחר ההתחברות. מכיל תצוגה ושאילתות לטעינת מידע כגון הזמנות אחרונות, הזמנות קרובות, תוספות (extras), ועוד.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>BizTimer</code> – מחלקה/אובייקט הנוצר בראש הקובץ (<code>$_timer = new BizTimer;</code>) לצורך מדידת זמני ביצוע.</li>\n<li><code>udb</code> – ספריית DB (קריאות למסד נתונים), למשל <code>udb::query()</code>, <code>udb::single_row()</code>, וכד’.</li>\n<li><code>OrderSpaMain</code> – מחלקה שנראה כי משמשת לחישוב עלויות ותשלומים עבור הזמנות ספא (קריאות <code>(new OrderSpaMain($order['orderID']))->get_paid_sum();</code>).</li>\n<li><code>TfusaBaseUser / TfusaUser</code> – אובייקטי משתמש, בהם נבדקים הרשאות, גישת אדמין, suffix, וכד’.</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד home",
+      "subSections": [
+        {
+          "title": "תרחיש 1: טעינת העמוד על ידי מנהל ספא",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1.1</td>\n<td>משתמש בעל הרשאת מנהל (adminAccess) נכנס ל־URL של הדף הראשי.</td>\n<td>1. המשתנה <code>$siteID</code> נקבע לפי <code>$_GET['sid']</code> או ברירת מחדל <code>$_CURRENT_USER->select_site()</code>.<br>2. נטענים נתוני הזמנות/טיפולים (כולל שאילתות ל־<code>orders</code>, <code>treatments</code>, <code>rooms_units</code>).<br>3. מוצגים סיכומי <code>$sumY</code>, <code>$sumM</code>, <code>$sumW</code> להזמנות השנה/החודש/השבוע.</td>\n</tr>\n<tr>\n<td>1.2</td>\n<td>רואה בלוקים עם סיכומי הזמנות (כמות, סכום) לשנה/חודש/שבוע, וכפתורים ליצירת הזמנה/תפוסה.</td>\n<td>1. אם <code>$_CURRENT_USER->is_spa()</code> ועוד יש לו <code>adminAccess=1</code>, הקוד מציג כפתורי יצירת הזמנה, קישורי לו\"ז יומי (print_schedule).<br>2. אזור <code>daily_ex</code> (אקסטרות יומיות) ו־<code>daily_treats</code> מחושבים ומוצגים ל־4 ימים קדימה.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 2: טעינת העמוד על ידי מטפל (member)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>2.1</td>\n<td>משתמש מטפל (suffix=member) נכנס לעמוד הבית, רואה רק את ההזמנות/המידע שלו.</td>\n<td>1. הקוד בודק <code>if(!$_CURRENT_USER->access(...)</code> ו־<code>$_CURRENT_USER->suffix()=='member'</code> → מסנן הזמנות לפי <code>therapistID</code> (רק של המשתמש).<br>2. לא מציג כפתורי ניהול (עריכת משמרות, כפתור יצירת־הזמנה) אם אינו מנהל.</td>\n</tr>\n<tr>\n<td>2.2</td>\n<td>רואה רשימה מצומצמת (“הלו\"ז שלי”), והזמנות אחרונות/קרובות רלוונטיות בלבד.</td>\n<td>1. פילטר <code>user_where</code> → מוסיף <code>AND T_orders.therapistID = $_CURRENT_USER->id()</code> לשאילתות.<br>2. החלקים הייחודיים למנהלים מוסתרים.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 3: הצגת הזמנות אחרונות/קרובות (section: .last-orders)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>3.1</td>\n<td>המשתמש גולל מטה ורואה קוביות/רשימות של “הזמנות אחרונות” ו”אירועים קרובים”.</td>\n<td>1. בשאילתות <code>$last</code> ו־<code>$nextBtm</code>/<code>$next</code> נטענים 6-8 הזמנות אחרונות (orderType='order') והזמנות עתידיות.<br>2. כל רשומה מוצגת על ידי הפונקציה <code>orderComp()</code> או <code>orderCompLine()</code> (עיבוד HTML/מידע).</td>\n</tr>\n<tr>\n<td>3.2</td>\n<td>לחיצה על אחד הפריטים מעבירה למסך עריכת/צפייה בהזמנה.</td>\n<td>1. קישורים דינמיים עם <code>data-pagetype=\"order\"</code> או onclick של <code>openNewSpa()</code> מעבירים לפרמטרים מתאימים.<br>2. חלק מההזמנות מוצגות רק אם סטטוס=1 (מאושרות), אחרת הן מסומנות/מופיעות חלקית.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 4: לחיצה על כפתור “יצירת הזמנה”",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>4.1</td>\n<td>משתמש אדמין לוחץ על הכפתור “יצירת הזמנה” בראש העמוד.</td>\n<td>1. נקראת פונקציית <code>openNewSpa(this)</code> (או <code>openNewOrder</code> אם אינו ספא).<br>2. נפתח טופס חדש בהמשך (מודאל או מעבר לעמוד) לרישום הזמנה עם פרטי לקוח, תאריך/שעה.</td>\n</tr>\n<tr>\n<td>4.2</td>\n<td>ממלא פרטי לקוח, בוחר טיפולים/חדרים ומאשר.</td>\n<td>1. השרת מעדכן טבלת <code>orders</code> / <code>orders (parentOrder)</code> / <code>orderUnits</code>.<br>2. נשמרת הזמנה במסד הנתונים, מופיעה מייד ב”הזמנות אחרונות”.</td>\n</tr>\n</tbody>\n</table>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך home",
+      "content": "<ul>\n<li><code>home.php</code> – הקובץ המלא שמכיל את הקוד עבור עמוד הבית.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li>קבצי פונקציות/הרשאות כגון <code>UserUtilsNew.php</code>, <code>functions.php</code>, ו/או הגדרת <code>$_CURRENT_USER</code> אינם מסופקים במלואם.</li>\n<li><code>OrderSpaMain</code>, <code>rooms_units</code> וסכמת DB מלאה אינם זמינים כאן במלואם.</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (home)",
+      "content": "<ul>\n<li><strong>home.php</strong> משמש כעמוד הראשי ונטען לאחר ההתחברות. הוא מציג נתוני סיכום להזמנות (שבוע/חודש/שנה), רשימות הזמנות אחרונות וקרובות, כפתורי יצירת הזמנה ופעולות מנהליות (בהתאם להרשאות).</li>\n<li>במקרה של משתמש מטפל (member), מוצגים פריטים מצומצמים ומסוננים לפי <code>therapistID</code>.</li>\n<li>הקוד מבחין אם זהו אתר ספא (<code>is_spa()</code>) ומציג תצוגה אחרת לעומת אתר שאינו ספא.</li>\n</ul>"
+    }
+  ]
+}

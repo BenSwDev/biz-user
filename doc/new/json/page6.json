@@ -1,0 +1,67 @@
+{
+  "pageTitle": "6. ניהול מנויים (subscriptions)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "לאחר ההקדמה הכללית לעמודי המערכת, נעמיק בעמוד “ניהול מנויים” (subscriptions).\nעמוד זה מופיע בתפריט הראשי תחת הפריט page=\"subscriptions\" (או רק אם הפונקציונליות זמינה באתר), וממומש בקובץ subscriptions.php.\nמשתמשים בעלי הרשאות מתאימות (למשל userType=0) יכולים להיכנס לעמוד המנויים, לצפות במנויים קיימים, לערוך, להוסיף תשלומים ולנהל טיפולים הכלולים במנוי (תלוי בסוג האתר)."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך Subscriptions",
+      "content": "<ul>\n<li><code>subscriptions.php</code> – העמוד המרכזי המציג טבלה של מנויים, טופס חיפוש, כפתור “הוסף חדש” וכו’.</li>\n<li><code>giftcards.js</code> – יש בו פונקציות כגון <code>findSubscription()</code>, וייתכן אזכורים ל־<code>openSubscription()</code>.</li>\n<li><code>ajax_subscription.php</code> – מטפל בפעולות CRUD והחיפוש (<code>act=...</code>)</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים אפשריים (לא סופקו במלואם)",
+      "content": "<ul>\n<li><code>ajax_client.php</code> (אוטו־השלמה ללקוח/עיר)</li>\n<li><code>SumBalancer.js</code> (חישוב סכומים בטופס המנוי)</li>\n<li><code>ajax_spaSMS.php</code> (שליחת הודעות SMS למנוי)</li>\n<li><code>UserUtilsNew.php</code> (מקורות הגעה, קופונים)</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד Subscriptions",
+      "content": "<ol>\n<li>כניסה לעמוד וצפייה ברשימה</li>\n<li>חיפוש מנוי מהיר (fast-find)</li>\n<li>יצירת מנוי חדש</li>\n<li>עריכת מנוי קיים</li>\n<li>הוספת טיפולים למנוי</li>\n<li>עדכון/צפייה בתשלומים</li>\n<li>שמירת מנוי (Save)</li>\n<li>פעולות נוספות (מחיקת מנוי, ביטול/השהייה)</li>\n</ol>",
+      "subSections": [
+        {
+          "title": "תרחיש 1: כניסה לעמוד וצפייה ברשימה",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1.1</td>\n<td>המשתמש מנווט ל־<code>?page=subscriptions</code>.</td>\n<td>1. אימות והרשאות (<code>auth.php</code> / <code>partials/menu.php</code>).<br>2. <code>subscriptions.php</code> נטען.</td>\n</tr>\n<tr>\n<td>1.2</td>\n<td>רואה כותרת “ניהול מנויים” + טופס חיפוש.</td>\n<td>1. <code>subscriptions.php</code> מציג <code>&lt;div class=\"title\"&gt;ניהול מנויים&lt;/div&gt;</code>.<br>2. מייצר SELECT/טבלת מנויים.</td>\n</tr>\n<tr>\n<td>1.3</td>\n<td>רואה טבלה של מנויים (מספר מנוי, שם לקוח...).</td>\n<td>1. ב-PHP מורכבת שאילתת SELECT מ־tables <code>subscriptions</code>, <code>subscriptionTreatments</code>, <code>subscriptionPayments</code>.<br>2. מוצגים סכומים וסטטוס (active וכו’).</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 2: חיפוש מנוי מהיר (fast-find)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>2.1</td>\n<td>ממלא בשדה “איתור מנוי מהיר” (<code>input#giftnum</code>) את מספר המנוי, לוחץ חיפוש (אייקון).</td>\n<td>1. <code>findSubscription()</code> ב־<code>giftcards.js</code> מופעל.</td>\n</tr>\n<tr>\n<td>2.2</td>\n<td>ממתין לתוצאה.</td>\n<td>1. <code>findSubscription()</code> שולח בקשת AJAX ל־<code>ajax_subscription.php</code> עם <code>act='findSubs'</code> ו־<code>snum=&lt;מספר מנוי&gt;</code>.<br>2. <code>case 'findSubs'</code>: מחפשים <code>subID</code>.</td>\n</tr>\n<tr>\n<td>2.3</td>\n<td>אם נמצא מנוי, נפתח חלון/פופ־אפ עריכה.</td>\n<td>1. התשובה JSON כוללת <code>subID</code>.<br>2. <code>if (res.subID) openSubscription({ subID: res.subID });</code></td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 3: יצירת מנוי חדש",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>3.1</td>\n<td>לוחץ על “הוסף חדש” (<code>&lt;div class=\"add-new\" onclick=\"openSubscription()\"&gt;</code>).</td>\n<td>1. טריגר JS: ייתכן <code>openSubscription({})</code> או <code>loadSub(0)</code>.<br>2. אפשרי: קריאה ל־<code>ajax_subscription.php?act=loadSub&amp;subID=0</code>.</td>\n</tr>\n<tr>\n<td>3.2</td>\n<td>נפתח פופ־אפ / עמוד פנימי עם טופס ריק להוספת מנוי.</td>\n<td>1. <code>ajax_subscription.php (case='loadSub')</code> מחזיר HTML של הטופס.<br>2. השדות: שם לקוח, טלפון, מחיר, הנחה, וכו’.</td>\n</tr>\n<tr>\n<td>3.3</td>\n<td>ממלא פרטי מנוי ולוחץ “שמור מנוי”.</td>\n<td>1. הטופס נשלח AJAX ל־<code>ajax_subscription.php?act=saveSubs</code>.</td>\n</tr>\n<tr>\n<td>3.4</td>\n<td>מקבל הודעת “נשמר בהצלחה”.</td>\n<td>1. ב־<code>saveSubs</code> → <strong>INSERT</strong> לטבלת <code>subscriptions</code>.<br>2. מגדירים <code>subNumber</code> (רנדומי), <code>active</code> וכו’.</td>\n</tr>\n<tr>\n<td>3.5</td>\n<td>רואה את המנוי החדש בטבלה המרכזית.</td>\n<td>1. אם <code>response.success==true</code> → <code>window.location.reload()</code> מציג את הרשומה החדשה.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 4: עריכת מנוי קיים",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>4.1</td>\n<td>לוחץ על שורת מנוי בטבלה (<code>onclick=\"openSubscription({subID:...})\"</code>).</td>\n<td>1. מפעיל JS הקורא <code>ajax_subscription.php?act=loadSub&amp;subID=XXX</code>.</td>\n</tr>\n<tr>\n<td>4.2</td>\n<td>נפתח פופ־אפ עריכה, והשדות מלאים בפרטי המנוי.</td>\n<td>1. ב־PHP: <code>loadSub</code> קורא <code>subscriptions</code> + <code>subscriptionTreatments</code>, מחבר HTML. מחזיר כ־JSON (<code>result['html']</code>).</td>\n</tr>\n<tr>\n<td>4.3</td>\n<td>עורך פרטים (מחיר, סטטוס פעיל וכו’).</td>\n<td>1. בשלב זה רק בצד הלקוח (DOM).</td>\n</tr>\n<tr>\n<td>4.4</td>\n<td>לוחץ “שמור מנוי”.</td>\n<td>1. שולח AJAX ל־<code>ajax_subscription.php?act=saveSubs</code> עם <code>subID</code> קיים → <strong>UPDATE</strong> ב־DB.</td>\n</tr>\n<tr>\n<td>4.5</td>\n<td>מקבל “נשמר בהצלחה” וריענון.</td>\n<td>1. <code>if response.status == 0</code> (success) → מנוי מתעדכן ב־DB, נסגר פופ-אפ או <code>reload()</code>.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 5: הוספת טיפולים למנוי",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>5.1</td>\n<td>בפופ־אפ העריכה יש “הוספת טיפולים” (<code>&lt;div id=\"add_treat\" ...&gt;</code>).</td>\n<td>1. לחיצה → נפתח חלון (למשל <code>div#subsAddTreats</code>) להוספת טיפולים.</td>\n</tr>\n<tr>\n<td>5.2</td>\n<td>ממלא “סוג טיפול”, “משך”, “כמות”... לוחץ “הוסף”.</td>\n<td>1. JS בונה אובייקט טיפול (<em>trid / duration / price...</em>) ומוסיף לרשימה (DOM).</td>\n</tr>\n<tr>\n<td>5.3</td>\n<td>רואה את הטיפול החדש ברשימה (טרם נשמר ב־DB).</td>\n<td>1. רק לאחר “שמור מנוי” (תרחיש 7) יבוצע <strong>INSERT</strong> ל־<code>subscriptionTreatments</code>.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 6: עדכון/צפייה בתשלומים",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>6.1</td>\n<td>רואה בטבלה סכום ששולם (אם קטן מהמחיר בניכוי הנחה, אדום).</td>\n<td>1. ב־<code>subscriptions.php</code> מחושב <code>$payed</code> מטבלת <code>subscriptionPayments</code>.<br>2. אם <code>$payed &lt; price - discount</code> → אדום.</td>\n</tr>\n<tr>\n<td>6.2</td>\n<td>יכול ללחוץ על כפתור / אייקון תשלום (למשל <code>&lt;span class=\"orderPrice new\"&gt;</code>).</td>\n<td>1. כנראה מפעיל <code>openPayAfterSaveSubs(...)</code> או פופ-אפ תשלום.</td>\n</tr>\n<tr>\n<td>6.3</td>\n<td>משתמש משלים תשלום \\ יוצא.</td>\n<td>1. הפעולה עצמה כנראה בקובץ <code>ajax_pay_subscription.php</code> (לא סופק), שמחייב \\ מעדכן.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 7: שמירת מנוי (Save)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>7.1</td>\n<td>בפופ־אפ עריכה/יצירה, לוחץ “שמור מנוי”.</td>\n<td>1. JS אוסף שדות (<em>clientName, phone, treatments...</em>)<br>2. שולח אותם ב־POST ל־<code>ajax_subscription.php?act=saveSubs</code>.</td>\n</tr>\n<tr>\n<td>7.2</td>\n<td>ממתין להודעת “נשמר בהצלחה”.</td>\n<td>1. <code>case='saveSubs'</code>: אם <code>subID=0</code> → <strong>INSERT</strong>; אם קיים → <strong>UPDATE</strong>.<br>2. שומר טיפולים (<code>trin[]</code>) ב־<code>subscriptionTreatments</code>.</td>\n</tr>\n<tr>\n<td>7.3</td>\n<td>רואה הודעת הצלחה, והמסך מתעדכן (סגירה \\ reload).</td>\n<td>1. <code>result['status'] = 0;</code> → <code>window.location.reload()</code> מציג נתונים עדכניים.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 8: פעולות נוספות (מחיקת מנוי, ביטול/השהייה)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>8.1</td>\n<td>לעיתים יש כפתור/אייקון מחיקה, או checkbox “פעיל”.</td>\n<td>1. אם “subActive” = 0 → ב־<code>saveSubs</code> קובע <code>active=0</code> במנוי.</td>\n</tr>\n<tr>\n<td>8.2</td>\n<td>מאשר “האם לבטל/להשבית מנוי?”</td>\n<td>1. עלול להיות <code>ajax_subscription.php?act=deleteSub</code> (לא נצפה בקוד הנוכחי, אך הגיוני).</td>\n</tr>\n<tr>\n<td>8.3</td>\n<td>המנוי מוסר/ מסומן כ־<code>deleted=1</code> (או “לא פעיל”).</td>\n<td>1. לא הוצג במפורש בקוד, אך דומה למחיקת גיפטקארד (<code>deleted=1</code>).</td>\n</tr>\n</tbody>\n</table>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך Subscriptions",
+      "content": "<ul>\n<li><code>subscriptions.php</code> – עמוד ראשי (טבלה + חיפוש).</li>\n<li><code>giftcards.js</code> – כולל <code>findSubscription()</code> ואולי <code>openSubscription()</code>.</li>\n<li><code>ajax_subscription.php</code> – CRUD (<code>findSubs, loadSub, saveSubs</code>).</li>\n<li>קבצים משניים: <code>ajax_client.php</code>, <code>ajax_spaSMS.php</code>, <code>SumBalancer.js</code>, <code>UserUtilsNew.php</code></li>\n<li>בסיסיים: <code>auth.php</code>, <code>functions.php</code> וכו’.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li><code>ajax_pay_subscription.php</code> (או דומה) – לסליקה / תשלומים בפועל.</li>\n<li><code>Terminal.php</code>, <code>Transaction.php</code>, <code>CardComGeneral.php</code> (לסליקה/זיכויים)</li>\n<li><code>download_invoice_gc.php</code> (חשבוניות)</li>\n<li><code>picUpload.php</code> (להעלאת תמונות)</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (Subscriptions)",
+      "content": "<ul>\n<li>עמוד <strong>Subscriptions</strong> פועל בדומה לעמוד GiftCards, אך לניהול מנויים:</li>\n<li>טבלה מרכזית (רשימת מנויים) + טופס חיפוש, יצירה/עריכה AJAX.</li>\n<li>“טיפולים” (<code>subscriptionTreatments</code>) במקום “מימושים”, וייתכן מודול תשלומים (<code>subscriptionPayments</code>).</li>\n<li>פעולות “מחיקה/ביטול/השהייה” ו”חיוב” דומות למודל GiftCards (activate/deactivate, refund).</li>\n<li>סליקה/זיכויים/חשבוניות דורשים קבצים נוספים.</li>\n</ul>"
+    }
+  ]
+}

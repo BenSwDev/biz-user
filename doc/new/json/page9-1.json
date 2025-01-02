@@ -1,0 +1,42 @@
+{
+  "pageTitle": "9.1 הגדרות ספא (treatments)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "הקובץ treatments.php הוא חלק ממערכת ניהול הספא. מטרתו לאפשר הגדרת טיפולים, זמני טיפול ומחירי טיפול באתר (siteID) מסוים. הוא מציג טבלת מחירים לפי משך טיפול (30 דקות, 45, 60, וכו’) ומאפשר לשמור שינויים."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך treatments",
+      "content": "<ul>\n<li><code>treatments.php</code> – מאפשר הגדרה וניהול של טיפולי הספא ומחיריהם לכל אתר (siteID).</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>sitesTretments</code> ו־<code>treatmentsPricesSites</code> – טבלאות DB הקשורות בהגדרת הטיפולים.</li>\n<li><code>udb::</code> – ספריית DB לשאילתות עבור שמירת/קריאת מחירי טיפולים (insert, update, וכו’).</li>\n<li><code>SpaPlusRelay</code> – מופיע בקוד למשל <code>new SpaPlusRelay($sid)</code> לצורך שליחת מחירים החוצה.</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד treatments",
+      "subSections": [
+        {
+          "title": "תרחיש 1: טעינת העמוד להצגת טבלת טיפולים",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1.1</td>\n<td>משתמש נכנס לכתובת: <code>?page=treatments</code>. רואה טבלה עם שמות הטיפולים ומשך הטיפול.</td>\n<td>1. הקוד קורא את <code>treatmentsPricesSites</code> (לדוגמה <code>SELECT * FROM treatmentsPricesSites WHERE siteID=...</code>).<br>2. מפיק רשימת טיפולים, תצוגה של משכי זמן שונים (duratuion) ו״תעריף יחיד/זוג/קבוצה״.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 2: עדכון מחירי טיפול ושמירה",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>2.1</td>\n<td>משתמש מקליד מחירים חדשים לשורה (למשל טיפול 60 דקות) ולוחץ על כפתור “שמור”.</td>\n<td>1. נשלחת קריאת <code>POST</code> עם <code>tprice[treatmentID][duratuion]</code> ועוד (price1, price2, price3).<br>2. הקוד מוחק רשומות קודמות ב־<code>treatmentsPricesSites</code> עבור ה־siteID הספציפי, ומוסיף את החדשות עם <code>udb::insert()</code> או <code>udb::update()</code>.<br>3. אם <code>SpaPlusRelay</code> מופעל, הוא שולח עדכון חיצוני.</td>\n</tr>\n</tbody>\n</table>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך treatments",
+      "content": "<ul>\n<li><code>treatments.php</code> – קובץ עיקרי.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li><code>SpaPlusRelay</code> – לא סופק במלואו, רק ידוע שעושה \"sendPrices()\".</li>\n<li>מידע מלא על טבלת DB (<code>treatments, treatmentsPricesSites</code>), לא סופק כאן.</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (treatments)",
+      "content": "<ul>\n<li><strong>treatments.php</strong> מאפשר ניהול טיפולים ומחיריהם, מציג טבלת תעריפים (לפי דקות) ונותן לשמור/לערוך מחירים חדשים.</li>\n<li>השינויים נשמרים בטבלת <code>treatmentsPricesSites</code> עבור ה־siteID של המשתמש.</li>\n<li>מיועד למנהלים / בעלי אתר ספא בעלי הרשאות מתאימות.</li>\n</ul>"
+    }
+  ]
+}

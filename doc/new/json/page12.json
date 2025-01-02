@@ -1,0 +1,51 @@
+{
+  "pageTitle": "12. יומן זמינות והזמנות (calendar_ver2)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "קובץ calendar_ver2.php אחראי לתצוגת יומן הכולל תאריכים (days) מול יחידות/חדרים (rooms). הוא מחשב משתנים כגון monthView (תצוגה חודשית לעומת רשימת ימים), ויוצר מערך תאריכים $showDays לפי טווח החודש הנבחר. בהמשך נטענות הזמנות רלוונטיות מהמסד (orders + orderUnits)."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך calendar_ver2",
+      "content": "<ul>\n<li><code>calendar_ver2.php</code> – הקובץ המרכזי בעמוד 12. טוען את רשימת הימים, החדרים, וההזמנות.</li>\n<li><code>tfusa2.js</code> – קובץ JavaScript שמצייר את ההזמנות על הגריד (addMonthViewOrder וכו').</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>rooms_units</code> ו־<code>rooms_domains</code> (בטבלה) – אינם קבצי PHP, אלא טבלאות DB שמהן נשלפים החדרים הפעילים.</li>\n<li><code>not_holidays</code> – טבלה ל'ימים מיוחדים' (str_replace לחגים/חופשות).</li>\n<li>בדיקת userType והרשאות (<code>$_CURRENT_USER->sites()</code>) קיימת כנראה בקבצים כלליים (auth.php).</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד calendar_ver2",
+      "content": "הקוד מציג שני מצבי תצוגה (monthView=1 או monthView=0) ומשתמש ב־JavaScript להדבקת ההזמנות. להלן עיקרי התרחישים:",
+      "subSections": [
+        {
+          "title": "תרחיש 1: טעינת יומן ושאילת הזמנות",
+          "content": "<ol>\n<li>המשתמש ניגש ל־<code>?page=calendar_ver2&date=...&monthView=...</code>.</li>\n<li>הקוד מחשב $date, $monthStart, $monthEnd, וטוען מה־DB הזמנות (בין firstDay ל־lastDay).</li>\n<li>מקבל רשימת $monthOrders ומציגן בחלוקה לימים וחדרים.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 2: ניווט חודש קודם / הבא",
+          "content": "<ol>\n<li>יש כפתורים 'חודש קודם' ו'חודש הבא', שמפנים ל־<code>?page=calendar_ver2&date=</code> (חודש ±1) + &monthView.</li>\n<li>הקוד טוען מחדש את הימים וההזמנות.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 3: החלפת תצוגה (רשימה ←→ חודש)",
+          "content": "<ol>\n<li>למשתמש מוצג select id=\"monthview\" (0=רשימה, 1=חודש, 2=יומית).</li>\n<li>onChange קורא <code>newload()</code> → משנה ל־calendar2_ver2 או נשאר ב־calendar_ver2.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 4: בחירת חדר / יחידה ספציפית",
+          "content": "<ol>\n<li>כפתור “כל היחידות” פותח popup עם רשימת חדרים. המשתמש בוחר חדר אחד/רבים.</li>\n<li>פונקציה <code>showunits(type,units,ttl)</code> מציגה/מסתירה .row[data-uid] ומשנה כותרת.</li>\n</ol>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך calendar_ver2",
+      "content": "<ul>\n<li><code>calendar_ver2.php</code> (הקובץ העיקרי)</li>\n<li><code>tfusa2.js</code> (JS לציור ההזמנות)</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li>אין פירוט מלא על קובצי Ajax שמנהלים את ההזמנה עצמה (למשל <code>ajax_orders.php</code>).</li>\n<li><code>Terminal.php / CardComGeneral.php</code> לא רלוונטיים ספציפית ליומן – אינם מופיעים בקובץ.</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (calendar_ver2)",
+      "content": "עמוד זה מתרכז בהצגת היומן (Days × Rooms). הוא קורא הזמנות ו’מדביק’ אותן באופן ויזואלי. קיימים מתגים בין 'תצוגה חודשית' לרשימה, וכפתורים לחדרים ספציפיים."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "pageTitle": "מסמך אפיון מלא – הקדמה כוללת לכל עמודי המערכת לפי התפריט",
+  "sections": [
+    {
+      "title": "א. סקירה כללית",
+      "content": "<p>במערכת קיימים מספר עמודים וקטגוריות מרכזיות, אליהם מנווטים דרך התפריט הראשי (כמופיע בקובץ <code>/partials/menu.php</code>). כל עמוד ממלא תפקיד פונקציונלי אחר במערכת, ומאפשר לנצל יכולות שונות (ניהול הזמנות, גיפטקארד, דוחות ועוד). בנוסף, קיימים קבצי קוד בסיסיים האחראים על סביבת העבודה (אימות, הרשאות, פונקציות עזר כלליות וכו’).</p>",
+      "subSections": [
+        {
+          "title": "א.1 קבצי קוד בסיסיים (auth, functions...)",
+          "content": "<p><strong>דוגמאות לקבצים בסיסיים</strong><br>- <strong>auth.php</strong> – אחראי על אימות גולשים, תחזוקת סשן והרשאות משתמש.<br>- <strong>functions.php</strong> – הגדרות כלליות ו”פונקציות עזר” משותפות.<br>- <strong>index.php</strong> – נקודת כניסה ראשית; טוען הגדרות, שפה, תפריטים, ומפנה לעמודים שונים.<br>- <strong>partials/menu.php</strong> – מגדיר את רשימת העמודים בתפריט הראשי, כולל קריטריונים כמו <code>userType=0/2</code>, <code>calendarOnly</code> ועוד.</p>"
+        },
+        {
+          "title": "א.2 תנאי הרשאות, userType",
+          "content": "<p>במערכת זו, פריטי תפריט מסוימים מוצגים או מוסתרים בתנאים שונים (למשל <code>userType=0</code> או <code>userType=2</code>) וכן תלוי אם <code>calendar_only=true/false</code>, וכדומה. הסלקטור <code>page=?</code> מפנה בפועל לקובץ PHP מסוים (כפי שהוסבר בהמשך).</p>"
+        }
+      ]
+    },
+    {
+      "title": "ב. עמודי המערכת כפי שמופיעים בתפריט",
+      "content": "<h3>עמודי המערכת כפי שהם מופיעים בתפריט (בהתאם ל־partials/menu.php)</h3>\n<p>להלן רשימת העמודים העיקריים, לצד ההפניה ל־PHP (מתוך הקובץ <code>?page=XXX</code>)...</p>\n<ul>\n<li>1. מסך ראשי (home)</li>\n<li>2. בדיקת כרטיס אשראי (ccard)</li>\n<li>3. הצטרפות לסליקה דרך המערכת (cc)</li>\n<li>4. פירוט עסקאות (yaadTrans)</li>\n<li>5. ניהול גיפטקארד (giftcards)</li>\n<li>6. ניהול מנויים (subscriptions)</li>\n<li>7. יומן תפוסה ספא (absolute_calendar)</li>\n<li>8. יצירת הזמנה ספא (create_order)</li>\n<li>9. הגדרות ספא (treatments / treaters)</li>\n<li>10. דוחות (report_manage)</li>\n<li>11. הצהרות בריאות (healthStatements)</li>\n<li>12. יומן זמינות והזמנות (calendar_ver2)</li>\n<li>13. יצירת הזמנה (create_order) – וריאציה שנייה</li>\n<li>14. דוחות (userType=2) – שוב אזכור</li>\n<li>15. לקוחות (clients)</li>\n<li>16. חיפוש הזמנות (orders-list)</li>\n<li>17. מחירים (prices)</li>\n<li>18. הגדרות (agreements)</li>\n<li>19. חוות דעת (reviews)</li>\n<li>20. סטטיסטיקות (stats)</li>\n<li>21. עדכון פנויים (vilasavail)</li>\n<li>22. מסך ראשי – שוב, למשתמש userType=2</li>\n<li>23. יומן תפוסה ספא (userType=2)</li>\n<li>24. יצירת הזמנה ספא (userType=2)</li>\n<li>25. ניהול גיפטקארד (userType=2)</li>\n<li>26. הצהרות בריאות (userType=2)</li>\n<li>27. חיפוש הזמנות (userType=2)</li>\n<li>28. חוות דעת (userType=2)</li>\n<li>29. דוחות (userType=2)</li>\n</ul>\n\n<h3>סיכום קצר של העמודים בתפריט</h3>\n<ul>\n<li>חלקם עוסקים במכירות וכספים (כמו ccard, yaadTrans, giftcards)</li>\n<li>חלקם לניהול לקוחות או הגדרות (clients, agreements)</li>\n<li>חלקם ספציפיים יותר לסוג אתר (absolute_calendar, cc)</li>\n<li>חלקם דוחות או סטטיסטיקות (report_manageZ, stats)</li>\n</ul>\n<p><strong>הערה על הרשאות</strong>: ב-<code>partials/menu.php</code> יש לוגיקה נוספת שקובעת האם פריט תפריט יוצג או לא. בנוסף, קיימים עוד קבצי PHP ברשימה הכוללת שאינם מופיעים בתפריט הראשי, אך קיימים לניהול פנימי או עמודי משנה.</p>",
+      "subSections": []
+    },
+    {
+      "title": "ג. קבצי קוד בסיסיים",
+      "content": "<ul>\n<li><strong>auth.php</strong> – אחראי על אימות והרשאות.</li>\n<li><strong>functions.php</strong> – פונקציות עזר כלליות.</li>\n<li><strong>index.php</strong> – נקודת כניסה, טוען תפריט וכו’.</li>\n<li><strong>partials/menu.php</strong> – הגדרת פריטי התפריט והרשאות.</li>\n</ul>",
+      "subSections": []
+    },
+    {
+      "title": "ד. העמודים ברשימה והקשר לתפריט (טבלה)",
+      "content": "<table>\n<thead>\n<tr>\n<th>שם קצר בתפריט</th>\n<th>page=?</th>\n<th>קובץ PHP</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>מסך ראשי</td>\n<td>home</td>\n<td>home.php</td>\n</tr>\n<tr>\n<td>בדיקת כרטיס אשראי</td>\n<td>(orders-to-sign) =&gt; ccard</td>\n<td>ccard.php</td>\n</tr>\n<tr>\n<td>הצטרפות לסליקה</td>\n<td>join-cc-service =&gt; cc</td>\n<td>cc.php</td>\n</tr>\n<tr>\n<td>פירוט עסקאות</td>\n<td>(orders-to-sign) =&gt; yaadTrans</td>\n<td>yaadTrans.php</td>\n</tr>\n<tr>\n<td>ניהול גיפטקארד</td>\n<td>giftcards =&gt; giftcards&amp;gc=1</td>\n<td>giftcards.php</td>\n</tr>\n<tr>\n<td>ניהול גיפטקארד (userType=2)</td>\n<td>giftcards =&gt; giftcards-log2 &amp; gc=1</td>\n<td>giftcards-log2.php</td>\n</tr>\n<tr>\n<td>ניהול מנויים</td>\n<td>subscriptions</td>\n<td>subscriptions.php</td>\n</tr>\n<tr>\n<td>יומן תפוסה ספא</td>\n<td>yoman =&gt; absolute_calendar</td>\n<td>absolute_calendar.php</td>\n</tr>\n<tr>\n<td>יצירת הזמנה ספא</td>\n<td>create_order =&gt; orders</td>\n<td>orders.php</td>\n</tr>\n<tr>\n<td>הגדרות ספא (מטפלים)</td>\n<td>treatments =&gt; treaters</td>\n<td>treaters.php</td>\n</tr>\n<tr>\n<td>דוחות (מספר גרסאות)</td>\n<td>report_manage =&gt; report_manageZ</td>\n<td>report_manageZ.php</td>\n</tr>\n<tr>\n<td>הצהרות בריאות</td>\n<td>(orders-to-sign) =&gt; healthStatements</td>\n<td>healthStatements.php</td>\n</tr>\n<tr>\n<td>יומן זמינות והזמנות</td>\n<td>yoman =&gt; calendar_ver2</td>\n<td>calendar_ver2.php</td>\n</tr>\n<tr>\n<td>יצירת הזמנה (כללי)</td>\n<td>create_order =&gt; orders</td>\n<td>orders.php</td>\n</tr>\n<tr>\n<td>לקוחות</td>\n<td>(orders-to-sign) =&gt; clients</td>\n<td>clients.php</td>\n</tr>\n<tr>\n<td>חיפוש הזמנות</td>\n<td>orders-list =&gt; orders</td>\n<td>orders.php</td>\n</tr>\n<tr>\n<td>מחירים</td>\n<td>orders-list =&gt; prices</td>\n<td>prices.php</td>\n</tr>\n<tr>\n<td>הגדרות</td>\n<td>(orders-to-sign) =&gt; agreements</td>\n<td>agreements.php</td>\n</tr>\n<tr>\n<td>חוות דעת</td>\n<td>(orders-to-sign) =&gt; reviews</td>\n<td>reviews.php</td>\n</tr>\n<tr>\n<td>סטטיסטיקות</td>\n<td>stats</td>\n<td>stats.php</td>\n</tr>\n<tr>\n<td>עדכון פנויים (צימרים)</td>\n<td>vilasavail</td>\n<td>vilasavail.php</td>\n</tr>\n</tbody>\n</table>",
+      "subSections": []
+    },
+    {
+      "title": "ה. קבצים נוספים במערכת (לא מופיעים בתפריט)",
+      "content": "<ul>\n<li>1. absolute_calendar.old.php</li>\n<li>2. absolute_calendar2.php</li>\n<li>3. absolute_calendar_dev.php</li>\n<li>4. ajax_paytypes.php</li>\n<li>5. alerts.php</li>\n<li>6. bizpop_settings.php</li>\n<li>7. calendar.php</li>\n<li>8. calendar2.php</li>\n<li>9. calendar2_ver2.php</li>\n<li>10. calendar_old.php</li>\n<li>11. calendarnew.php</li>\n<li>12. clients_pages.php</li>\n<li>13. galleryGlobal.php</li>\n<li>14. giftcards-log.php (לעומת giftcards-log2 למשתמש-על)</li>\n<li>15. healthdec.php</li>\n<li>16. hours.php</li>\n<li>17. monthmaster.php</li>\n<li>18. monthmaster_dev.php</li>\n<li>19. monthtotals.php</li>\n<li>20. monthtotals_dev.php</li>\n<li>21. monthtotals_test.php</li>\n<li>22. O_clients.php</li>\n<li>23. OLD_treaters.php</li>\n<li>24. orderTexts.php</li>\n<li>25. paymentsettings.php</li>\n<li>26. paytypes.php</li>\n<li>27. products.php</li>\n<li>28. report_budget.php</li>\n<li>29. report_extras.php</li>\n<li>30. report_manage_dev.php</li>\n<li>31. report_manage_test.php</li>\n<li>32. report_operative.php</li>\n<li>33. report_period.php</li>\n<li>34. report_treatments.php</li>\n<li>35. sales-banners.php</li>\n<li>36. settings.php</li>\n<li>37. shiftscalendar.php</li>\n<li>38. sites_cupons.php</li>\n<li>39. sources.php</li>\n<li>40. statistics.php</li>\n<li>41. stats_treatments.php</li>\n<li>42. treat_desc.php</li>\n<li>43. treatmentsrooms.php</li>\n<li>44. workers.php</li>\n</ul>",
+      "subSections": []
+    },
+    {
+      "title": "ו. סיום ההקדמה",
+      "content": "<p><strong>זהו המסמך המרכזי המאגד את 26 (ויותר) העמודים המרכזיים במערכת (סעיפים 1–29)</strong>. ניתן להעתיק את התוכן כפי שהוא (כולל טבלאות) אל Word לצורך המשך עבודה.</p>",
+      "subSections": []
+    }
+  ]
+}

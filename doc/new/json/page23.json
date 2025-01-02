@@ -1,0 +1,42 @@
+{
+  "pageTitle": "23. יומן תפוסה ספא (userType=2)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "זהו וריאציה של עמוד יומן התפוסה (absolute_calendar.php) כאשר משתמש בעל userType=2 (סוכן, מפעיל חיצוני, וכד’) גולש במערכת. עדיין זהו עמוד לקביעת משמרות, מטפלים וחדרים, אך עשוי לכלול הגבלות/אפשרויות ספציפיות בהתאם ל־userType=2."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך יומן תפוסה ספא (userType=2)",
+      "content": "<ul>\n<li><code>absolute_calendar.php</code> – העמוד המרכזי של היומן, אך מותאם למשתמש userType=2.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>rooms_units</code>, <code>therapists</code>, <code>spaShifts</code>, <code>orders</code> – טבלאות DB לטעינת מידע (חדרים, מטפלים, משמרות, והזמנות).</li>\n<li><code>ajax_daily_remarks.php</code> – עבור הערות יומיות.</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד userType=2 (יומן)",
+      "subSections": [
+        {
+          "title": "תרחיש 1: צפייה ביומן עבור userType=2",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1.1</td>\n<td>המשתמש פותח <code>?page=absolute_calendar</code> עם userType=2.</td>\n<td>1. בודקים <code>$_CURRENT_USER->userType</code>.<br>2. לפי המצב (או suffix), מציגים/מסתירים אפשרויות (כגון יצירת משמרת, הרשאות מחיקה...).</td>\n</tr>\n<tr>\n<td>1.2</td>\n<td>יכול לנווט בין תצוגה יומית/שבועית/חודשית/רשימה, אך ייתכן הגבלת פעולות (למשל אינו יכול לערוך משמרות).</td>\n<td>1. הפרמטרים <code>type=</code>(משמרות/מטפלים/חדרים), <code>viewtype=</code> (0,1,2) מעובדים.<br>2. אם userType=2 לא מוגדר כ־admin, אז פעולות כמו הוספת משמרת או הערות עשויות להיות מוסתרות.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 2: הצגת הזמנות ומגבלות עריכה",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>2.1</td>\n<td>רואה את ההזמנות פר מטפל/חדר, אך ללא כפתור “יצירת הזמנה חדשה”.</td>\n<td>1. הקוד מזהה <code>adminAccess=0</code>, ולכן לא מציג כפתור יצירת הזמנה.<br>2. ההזמנות נטענות מ־<code>orders</code> / <code>spaShifts</code>, חותכות לתאריכים המתאימים ומוצגות בטבלה.</td>\n</tr>\n<tr>\n<td>2.2</td>\n<td>מנסה לערוך הערה יומית – לא מוצא אייקון הערות.</td>\n<td>1. אם userType=2 אינו מנהל, <code>$adminAccess</code>=0, קוד ה־<code>daily_remarks</code> מוסתר.<br>2. אין אפשרות לעדכן <code>daily_calendar_remarks</code> באותו עמוד.</td>\n</tr>\n</tbody>\n</table>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך יומן (userType=2)",
+      "content": "<ul>\n<li><code>absolute_calendar.php</code> – אותו קובץ עם התאמות שנחשפו בקוד חלקי.</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li><code>ajax_daily_remarks.php</code> – לא סופק, אך הקוד משתמש בו לעריכת הערות.</li>\n<li>מנגנון <code>$_CURRENT_USER->userType==2</code> והבדלים מול אדמין (כנראה suffix!='member') לא נראה בשלמותו.</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (יומן תפוסה ספא - userType=2)",
+      "content": "<ul>\n<li><strong>absolute_calendar.php (userType=2)</strong> מציג יומן ספא (מטפלים, חדרים, משמרות), אך עם הרשאות חלקיות.</li>\n<li>משתמש שאינו אדמין (userType=2) יוכל לצפות בהזמנות, להתמצא בתצוגה יומית/שבועית/חודשית, אך כנראה לא לערוך משמרות והערות.</li>\n<li>עדיין נטענים פרטי ההזמנות מ־<code>orders</code>/<code>spaShifts</code>, נחתכים לפי <code>timeFrom/timeUntil</code>, ומסודרים בטבלה המקבילה למשתמש רגיל.</li>\n</ul>"
+    }
+  ]
+}

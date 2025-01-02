@@ -1,0 +1,47 @@
+{
+  "pageTitle": "15. לקוחות (clients.php)",
+  "sections": [
+    {
+      "title": "הקדמה",
+      "content": "קובץ clients.php מציג רשימת לקוחות (crm_clients) ומאפשר לחפש לפי טווחי תאריכים, מקור לקוח (health / order), יום/חודש לידה ועוד."
+    },
+    {
+      "title": "הקבצים הרלוונטיים לצורך clients",
+      "content": "<ul>\n<li><code>clients.php</code> – העמוד העיקרי, מייצר טופס חיפוש ומציג את הטבלה.</li>\n<li><code>ajax_client.php</code> – לא מופיע במלואו, אך בקוד רואים אזכורים (למשל autoComplete).</li>\n</ul>"
+    },
+    {
+      "title": "קבצים נוספים (לפי הקוד)",
+      "content": "<ul>\n<li><code>UserUtilsNew.php</code> – עשוי לשמש ב־source='treatment'/ 'health'.</li>\n<li><code>autoComplete.min.js</code> – מזוהה בשורת '(typeof 'autoComplete'...'.</li>\n</ul>"
+    },
+    {
+      "title": "תרחישים כוללים בעמוד clients",
+      "content": "לפי הקוד:",
+      "subSections": [
+        {
+          "title": "תרחיש 1: חיפוש לקוחות",
+          "content": "<ol>\n<li>בעל האתר ממלא טופס סינון (timeType, from, to, source, ads=1 או ads=0, חיפוש חופשי).</li>\n<li>מאתחל WHERE וצובר תנאים (c.createTime... c.updateTime...).</li>\n<li>מריץ SELECT שמחזיר $clients. מציגם בטבלה.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 2: מחיקת לקוח",
+          "content": "<ol>\n<li>בטבלה, בכל שורה יש <img class=\"del\" />, onclick → שולח ל־ajax_client.php {act:'delete', cid:..., sid:...}.</li>\n<li>אם הצליח, השורה נמחקת מהדפדפן.</li>\n</ol>"
+        },
+        {
+          "title": "תרחיש 3: שליחת SMS",
+          "content": "<ol>\n<li>קיים כפתור 'שליחת SMS' שפותח popup.sms-pop.</li>\n<li>משתמש יכול להזין טלפון, הודעה עד 80 תווים, ולשלוח (ajax_spaSMS.php).</li>\n</ol>"
+        }
+      ]
+    },
+    {
+      "title": "קבצים שנבדקו לצורך clients",
+      "content": "<ul>\n<li><code>clients.php</code> (מלא)</li>\n<li><code>ajax_client.php</code> (רק אזכור למחיקה)</li>\n<li><code>ajax_spaSMS.php</code> (רק אזכור לשליחת SMS)</li>\n</ul>"
+    },
+    {
+      "title": "קבצים חסרים להשלמת חלק מהתרחישים",
+      "content": "<ul>\n<li><code>ajax_client.php</code> – לא רואים את מלוא הקוד, אבל אחראי ל־CRUD.</li>\n<li><code>auth.php</code> – הרצת בדיקות הרשאה.</li>\n</ul>"
+    },
+    {
+      "title": "סיכום (clients)",
+      "content": "העמוד מאפשר ניהול לקוחות: חיפוש ותצוגה, מחיקה, שליחת SMS ועוד. החיפוש גמיש (תאריכים, מקור, לידה), והתוצאות מופיעות בטבלה עם אפשרות ייצוא לאקסל (דרך כפתור 'ייצוא')."
+    }
+  ]
+}
