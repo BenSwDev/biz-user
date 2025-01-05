@@ -3,72 +3,100 @@
   "sections": [
     {
       "title": "הקדמה",
-      "content": "הקובץ absolute_calendar.php מציג יומן תפוסה עבור ספא, ומאפשר להציג משמרות (shifts), מטפלים (therapists) או חדרים (units) – בהתאם לפרמטרים GET (type, viewtype, date, weekly, workers). בעמוד קיימות פונקציות הצגה יומית, שבועית או חודשית, וכן מנגנונים נוספים לניהול הערות יומיות, גלילה/גרירה אופקית ואנכית, והצגה של ההזמנות/המשמרות/העובדים/החדרים הרלוונטיים."
+      "content": "בדף absolute_calendar.php מוצג יומן תפוסה עבור ספא, המאפשר להציג משמרות (shifts), מטפלים (therapists) או חדרים (units). העמוד תומך בתצוגות יום/שבוע/חודש/רשימה, כולל חיתוך אירועים מחוץ לטווח התאריכים, מנגנון גלילה וגרירה, והצגה של \"הערות יומיות\". בנוסף, יש תמיכה במטפלים פיקטיביים (fictive) ובנעילת יום (locked), וכן התחשבות בחגים/ימי חופשה (not_holidays, sites_periods) ושעות פעילות יומיות (sites_weekly_hours). קיימים דגלים רבים לקביעת אופן הצגת היומן (remarksShort, roomsShort, therapistShort, hidefaces, groupTreat, timeStart, redline)."
     },
     {
       "title": "הקבצים הרלוונטיים לצורך absolute_calendar",
-      "content": "<ul>\n<li><code>absolute_calendar.php</code> – הקובץ הראשי, משמש ליצירת התצוגה, טבלת היומן, טעינת הנתונים (הזמנות/משמרות) וסינון לפי פרמטרים (type, viewtype, date, weekly, workers).</li>\n</ul>"
+      "content": "<ul>\n<li><code>absolute_calendar.php</code> – הקובץ הראשי (נסרק במלואו).</li>\n<li><code>page7.json</code> – גרסת הדוקומנטציה המקורית שסופקה (נסרק במלואו).</li>\n<li><code>ajax_daily_remarks.php</code> – משמש לשמירת הערות יומיות (נסרק במלואו).</li>\n</ul>"
     },
     {
       "title": "קבצים נוספים (לפי הקוד)",
-      "content": "<ul>\n<li><code>ajax_daily_remarks.php</code> – משמש לשמירת הערות יומיות (המוזכרות בקוד). לא סופק במלואו.</li>\n<li>מופעים בקוד של פונקציות <code>udb</code> וקריאות DB נוספות (מן הסתם בקובץ פונקציות או DB חיצוני), וכן משתנה <code>$domain_icon</code> שאיננו מוגדר בקובץ זה.</li>\n</ul>"
+      "content": "<ul>\n<li><code>ajax_tfusa_view.php</code> – לא סופק במלואו, נדרש כדי להשלים פעולות AJAX נוספות (set_session וכו').</li>\n<li>קובץ שמממש את <code>udb::...</code> (כגון <code>UserUtilsNew.php</code>) – לא סופק.</li>\n<li>הגדרות נוספות כגון <code>$domain_icon</code> (מקור לא ידוע), לא סופק במלואו.</li>\n</ul>"
     },
     {
       "title": "תרחישים כוללים בעמוד absolute_calendar",
       "subSections": [
         {
           "title": "תרחיש 1: טעינת העמוד עם פרמטרים",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד (מה קורה)</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1.1</td>\n<td>המשתמש נכנס ל־URL עם פרמטרים למשל: <code>?page=absolute_calendar&type=2&viewtype=0&date=01/05/2024&weekly=1&workers=0</code>.</td>\n<td>1. <code>$_GET[\"type\"]</code>, <code>$_GET[\"viewtype\"]</code>, <code>$_GET[\"date\"]</code>, <code>$_GET[\"weekly\"]</code>, <code>$_GET[\"workers\"]</code> מזוהים.<br>2. בהתאם לערכים בקוד, נקבעים סוג היומן (<code>$caltype</code>), סוג התצוגה (<code>$viewtype</code>), תאריך נוכחי וכו'.</td>\n</tr>\n<tr>\n<td>1.2</td>\n<td>העמוד נטען, מציג כותרות וכפתורי החלפה (יום/שבוע/חודש).</td>\n<td>1. בקוד נוצרת טבלת יומן ודיבים שונים (\"<code>days-table</code>\", \"<code>top-buttons</code>\").<br>2. מחושבים <code>$firstDay</code>, <code>$lastDay</code>, <code>$showDays</code> (טווח ימים) בהתאם לתצוגה.</td>\n</tr>\n</tbody>\n</table>"
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1.1</td>\n<td>משתמש נכנס ל-URL עם פרמטרים (למשל <code>?page=absolute_calendar&type=2&viewtype=0&date=01/05/2024&weekly=1&workers=0</code>).</td>\n<td>1. הפרמטרים נקלטים (<code>type, viewtype, date, weekly, workers</code>).<br>2. הגדרת <code>$caltype</code>, <code>$viewtype</code>, <code>$date</code> וכו'.<br>3. טווח התאריכים מחושב (<code>$firstDay</code>, <code>$lastDay</code>, <code>$showDays</code>), נוצרת טבלת יומן.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
-          "title": "תרחיש 2: מעבר בין מצב יום / שבוע / חודש (viewtype)",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>2.1</td>\n<td>משתמש לוחץ על קישור “תצוגה יומית” / “שבועית” / “רשימה” / “חודשית”.</td>\n<td>1. הפרמטר <code>viewtype</code> מקבל ערכים (0=רשימה, 1=חודש, 2=יום).<br>2. אם <code>weekly=1</code> ו־<code>viewtype=0</code>, מציג תצוגת שבוע.</td>\n</tr>\n<tr>\n<td>2.2</td>\n<td>העמוד נטען מחדש עם התצוגה החדשה.</td>\n<td>1. הקוד בוחן אם <code>$weekly</code> מוגדר.<br>2. <code>$firstDay</code> ו־<code>$lastDay</code> מחושבים מחדש (לפי שבוע, יום, או חודש), וכן <code>$insertDay</code> ו־<code>$showDays</code>.</td>\n</tr>\n</tbody>\n</table>"
+          "title": "תרחיש 2: מעבר בין מצב יום / שבוע / חודש / רשימה",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>2.1</td>\n<td>משתמש בוחר תצוגה יומית / שבועית / חודשית / רשימה.</td>\n<td>1. <code>viewtype</code> מתעדכן (0=רשימה, 1=חודש, 2=יום).<br>2. בשילוב <code>weekly=1</code> יופעל מצב שבועי.</td>\n</tr>\n<tr>\n<td>2.2</td>\n<td>העמוד נטען מחדש.</td>\n<td>1. חישוב מחדש <code>$firstDay</code>, <code>$lastDay</code>, <code>$showDays</code>.<br>2. בניית טבלת יומן מותאמת.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
           "title": "תרחיש 3: תצוגה לפי משמרות / מטפלים / חדרים (type=0,1,2)",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>3.1</td>\n<td>משתמש בוחר באחד מהכפתורים “משמרות”, “לפי מטפלים”, “לפי חדרים”.</td>\n<td>1. <code>$caltype</code> נקבע ל־0 (משמרות), 1 (מטפלים) או 2 (חדרים).<br>2. הקוד טוען רשימת המטפלים/חדרים/משמרות בהתאם, ושומר אותם במשתנה <code>$crooms</code>.</td>\n</tr>\n<tr>\n<td>3.2</td>\n<td>העמוד מציג רשימות שונות בצד ימין (r-side) לפי הבחירה.</td>\n<td>1. לדוגמה אם <code>$caltype=2</code>, נטענות יחידות (units) וחדרים.<br>2. אם <code>$caltype=1</code>, נטענים מטפלים וכד’.</td>\n</tr>\n<tr>\n<td>3.3</td>\n<td>כל רשומה מופיעה עם נתון סיכומי הטיפולים/המשמרות שלה.</td>\n<td>1. הקוד מחשב <code>$totals</code> ו־<code>$totalsTime</code>, מציג בכותרת: “אין הזמנות” או “סה\"כ x”.</td>\n</tr>\n</tbody>\n</table>"
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>3.1</td>\n<td>משתמש בוחר \"משמרות\"/\"מטפלים\"/\"חדרים\".</td>\n<td>1. <code>$caltype</code> נקבע ל-0 (משמרות) / 1 (מטפלים) / 2 (חדרים).<br>2. טעינת נתוני בסיס כגון <code>therapists</code> או <code>rooms_units</code> ל-<code>$crooms</code>.</td>\n</tr>\n<tr>\n<td>3.2</td>\n<td>רואה בצד ימין את הרשימה.</td>\n<td>מוצגים חדרים/מטפלים/משמרות באופן מרוכז.</td>\n</tr>\n<tr>\n<td>3.3</td>\n<td>סיכומי טיפולים/משמרות.</td>\n<td>חישוב <code>$totals</code>, <code>$totalsTime</code> והצגתם.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
           "title": "תרחיש 4: מעבר למצב עובדים (workers)",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>4.1</td>\n<td>משתמש לוחץ על “עובדים” במקום “מטפלים” (הפרמטר <code>workers=1</code>).</td>\n<td>1. אם <code>workers=1</code>, הקוד בוחר טבלת <code>workers</code> במקום <code>therapists</code> ומחפש <code>workerID</code>.<br>2. יוצג מידע על עובדים (name, siteID, וכו’).</td>\n</tr>\n<tr>\n<td>4.2</td>\n<td>רואה רשימת עובדים במקום מטפלים.</td>\n<td>1. אותו מנגנון של <code>$crooms</code> אך עם workers.<br>2. ההצגה זהה, רק הקוד מותאם ל־<code>workShifts</code> במקום <code>spaShifts</code> (תלוי מה מוגדר).</td>\n</tr>\n</tbody>\n</table>"
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>4.1</td>\n<td>משתמש לוחץ \"עובדים\" (workers=1).</td>\n<td>1. הקוד מזהה <code>workers=1</code> וטוען נתונים מ-<code>workers</code> ולא מ-<code>therapists</code>.<br>2. משמרות נטענות מ-<code>workShifts</code> במקום <code>spaShifts</code>.</td>\n</tr>\n<tr>\n<td>4.2</td>\n<td>רשימת עובדים מוצגת.</td>\n<td>הצגה מקבילה ל\"מטפלים\", רק עם <code>workers</code>.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
           "title": "תרחיש 5: גלילה/גרירה אופקית ואנכית של היומן",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>5.1</td>\n<td>המשתמש גורר את טבלת היומן עם העכבר/אצבע כדי לנווט אופקית/אנכית.</td>\n<td>1. יש handlers <code>mousedown</code> ו־<code>mousemove</code> בהם מחושב <code>dx</code>/<code>dy</code>.<br>2. <code>$('#divToScroll').scrollLeft(...) / scrollTop(...)</code> מתעדכנים בהתאם.</td>\n</tr>\n<tr>\n<td>5.2</td>\n<td>יכול לצפות בכל העמודות/משבצות ימינה ושמאלה.</td>\n<td>1. הקוד מוסיף גם טיפול ב־touchmove במסך ניידים (<code>addEventListener('touchmove')</code>).<br>2. מופיע פתרון ל-bug של רענון חלקי (<code>.addClass('fix_bug')</code>).</td>\n</tr>\n</tbody>\n</table>"
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>5.1</td>\n<td>גורר את הטבלה עם העכבר/אצבע.</td>\n<td>1. <code>mousedown</code>, <code>mousemove</code>, <code>touchmove</code> מנהלים את <code>scrollLeft()</code>/<code>scrollTop()</code>.<br>2. שימוש ב-<code>dragging</code> וערכים <code>dx</code>, <code>dy</code>.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
           "title": "תרחיש 6: הצגת והוספת הערות יומיות (Daily Remarks)",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>6.1</td>\n<td>משתמש אדמין רואה אייקון הערות, לוחץ עליו.</td>\n<td>1. רק אם <code>$adminAccess=1</code> (או suffix != member) ההערות מופעלות.<br>2. שדה <code>$remarksShort</code> מורה אם להראות סמליל.</td>\n</tr>\n<tr>\n<td>6.2</td>\n<td>נפתח פופ־אפ הזנת טקסט, לוחץ “שמור”.</td>\n<td>1. בפעולה <code>submit_remarks()</code>, נעשית קריאת <code>$.post('ajax_daily_remarks.php', ...)</code> לשמור <code>remarks</code> ב־DB.<br>2. התוצאה: אם יש טקסט, האייקון משנה מראה (class=\"msgs\").</td>\n</tr>\n</tbody>\n</table>"
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>6.1</td>\n<td>מנהל רואה אייקון הערות ולוחץ.</td>\n<td>1. <code>$adminAccess=1</code> נדרש לעריכה.<br>2. <code>$remarksShort</code> להגדרת תצוגה מקוצרת.</td>\n</tr>\n<tr>\n<td>6.2</td>\n<td>בפופאפ מקליד הערה ולוחץ \"שמור\".</td>\n<td>1. <code>ajax_daily_remarks.php</code> שומר ב-DB.<br>2. שינוי אייקון ל-<code>class=\"msgs\"</code> אם יש טקסט.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
-          "title": "תרחיש 7: סינון והצגת יחידות (popup) כאשר type=2 (חדרים)",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>7.1</td>\n<td>משתמש לוחץ “כל היחידות” או בוחר ביחידה ספציפית ב־popup.</td>\n<td>1. ב־HTML יש <code>\".popup.unitSelect\"</code> שמכיל רשימת יחידות וחדרים.<br>2. הפונקציה <code>showunits()</code> מציגה/מחביאה את השורות לפי <code>data-uid</code>.</td>\n</tr>\n<tr>\n<td>7.2</td>\n<td>מופיעים רק החדרים/יחידות שבחר.</td>\n<td>1. <code>$('.row[data-uid='+ units +']').show()</code> – מציג רק את השורות המתאימות.<br>2. <code>$('#unitSelect').hide()</code> – סוגר את ה־popup.</td>\n</tr>\n</tbody>\n</table>"
+          "title": "תרחיש 7: סינון והצגת יחידות (type=2)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>7.1</td>\n<td>לוחץ \"כל היחידות\" או יחידה כלשהי.</td>\n<td>1. <code>showunits()</code> מופעל.<br>2. פופאפ <code>#unitSelect</code> נפתח.</td>\n</tr>\n<tr>\n<td>7.2</td>\n<td>רואה רק מה שנבחר.</td>\n<td><code>$('.row[data-uid='+uid+']').show()</code> וסגירת הפופאפ.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
-          "title": "תרחיש 8: טעינת ההזמנות/משמרות והצגתן ביומן",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>8.1</td>\n<td>העמוד עולה, ומצפה לראות את ההזמנות (אם <code>type=1 או 2</code>), או משמרות (אם <code>type=0</code>).</td>\n<td>1. הקוד קורא טבלת <code>orders</code> (כש <code>$caltype>0</code>) או משמרות (<code>spaShifts</code> / <code>workShifts</code>), ומאחד ל־<code>$calendarOrders</code>.<br>2. נעשה מיון ופילטור לפי תאריכים <code>timeFrom/timeUntil</code>.</td>\n</tr>\n<tr>\n<td>8.2</td>\n<td>רואה את הבלוקים על גבי היומן, בחפיפה ליום/שעה/חדר/מטפל.</td>\n<td>1. כל <code>$calendarOrders</code> נחתך לפי טווחי תאריכים/שעות (\"חיתוך\" ביום/שבוע).<br>2. נוצרת מפה: <code>row = masterID או unitID</code>, <code>col = date/hours</code>.<br>3. בפועל ב־JS: <code>addOrder()</code> או <code>addShift_inOrders()</code> מייצרות div עם style מתאים.</td>\n</tr>\n</tbody>\n</table>"
+          "title": "תרחיש 8: טעינת הזמנות/משמרות והצגתן ביומן",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>8.1</td>\n<td>רוצה לראות הזמנות (type=1/2) או משמרות (type=0).</td>\n<td>1. <code>orders</code> או <code>spaShifts/workShifts</code> נטענים ל-<code>$calendarOrders</code>.<br>2. סינון לפי <code>timeFrom/timeUntil</code>.</td>\n</tr>\n<tr>\n<td>8.2</td>\n<td>בלוקים בצבעים מופיעים ביומן.</td>\n<td>1. <code>addOrder()</code> / <code>addShift_inOrders()</code> מייצרים <code>&lt;div&gt;</code> עם סגנון גודל/מיקום.<br>2. משמרת פיקטיבית עלולה לחסום יום שלם.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
-          "title": "תרחיש 9: חיתוך ההזמנות לפי יום / שבוע / חודש",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>9.1</td>\n<td>משתמש עבר לתצוגת חודש / שבוע / יום, או בחר תאריך.</td>\n<td>1. <code>$viewtype=1</code> → חודש, <code>$viewtype=2</code> → יום, אחר = רשימה/שבוע (עם weekly=1).<br>2. הקוד בודק אם ההזמנה חורגת מעבר לסוף/התחלה של הטווח וחותך <code>timeFrom/timeUntil</code>.</td>\n</tr>\n<tr>\n<td>9.2</td>\n<td>רואה שהאירועים לא \"בורחים\" מהטבלה: טווח כפול מקוצץ.</td>\n<td>1. לדוגמה, אם קבע חודש, וחלק מההזמנה התחילה לפני תחילת החודש, <code>timeFrom</code> יקבל \"תאריך תחילת החודש\".<br>2. בקוד – עדכוני <code>$calendarOrders[$k]['timeFrom']</code> או <code>$calendarOrders[$k]['timeUntil']</code>.</td>\n</tr>\n</tbody>\n</table>"
+          "title": "תרחיש 9: חיתוך הזמנות לפי יום/שבוע/חודש",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>9.1</td>\n<td>בוחר תצוגת יום/שבוע/חודש.</td>\n<td>1. הגדרת <code>$viewtype=1</code>/<code>2</code> או <code>weekly=1</code>.<br>2. אירועים ארוכים מקוצרים.</td>\n</tr>\n<tr>\n<td>9.2</td>\n<td>האירוע \"נחתך\" בגבולות התצוגה.</td>\n<td>עדכון <code>$calendarOrders[k]['timeFrom']</code> ו-<code>$calendarOrders[k]['timeUntil']</code>.</td>\n</tr>\n</tbody>\n</table>"
         },
         {
           "title": "תרחיש 10: מצב משתמש רגיל מול מנהל (adminAccess)",
-          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>10.1</td>\n<td>משתמש עם <code>suffix!=member</code> מקבל <code>adminAccess=1</code>, רואה אופציות עריכה (שעות, הערות וכו’).</td>\n<td>1. <code>$adminAccess = $_CURRENT_USER->access(TfusaUser::ACCESS_BIT_ADMIN)</code> ובנוסף בדיקה של suffix.<br>2. אם <code>adminAccess=1</code>, מציג כפתורים/פיצ'רים (עריכת משמרות, הערות...).</td>\n</tr>\n<tr>\n<td>10.2</td>\n<td>משתמש רגיל רואה רק את המשמרות/ההזמנות שלו (אם <code>$calWhere</code> = therapistID).</td>\n<td>1. הגבלה בקוד <code>AND orders.therapistID = $_CURRENT_USER->id()</code> אם לא אדמין.<br>2. לא מוצגים כפתורים כמו “ערוך שבוע” או “הערות יום”.</td>\n</tr>\n</tbody>\n</table>"
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>10.1</td>\n<td>מנהל רואה כפתורי עריכה.</td>\n<td>1. <code>$adminAccess=1</code> מציג \"ערוך שבוע\" וכו'.<br>2. משתמש רגיל מוגבל לתצוגת הזמנותיו.</td>\n</tr>\n<tr>\n<td>10.2</td>\n<td>משתמש רגיל אינו רואה כפתורים מסוימים.</td>\n<td>1. אין \"ערוך שבוע\", אין \"הערות יומיות\".<br>2. סינון לפי <code>therapistID</code> (או <code>workerID</code>).</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 11: משמרות פיקטיביות (fictive) ונעילת יום",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>11.1</td>\n<td>רואה \"מטפל פיקטיבי\" שחוסם יום.</td>\n<td>1. <code>workerType='fictive'</code> מגדיר משמרת 00:00-23:59.<br>2. <code>status=0</code> עשוי להסתיר אותה.<br>3. שימוש ב-<code>bshift</code>/<code>ashift</code> לשעות.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 12: עריכת שבוע (weekly_shifts)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>12.1</td>\n<td>לוחץ על \"ערוך שבוע\" ליד מטפל.</td>\n<td>1. נשלח <code>masterID</code> + טווח שבועי.<br>2. עריכת המשמרות של אותו מטפל.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 13: Drag & Drop בהזמנה",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>13.1</td>\n<td>מנסה לגרור הזמנה בין תאים.</td>\n<td>1. אלמנטים עם <code>ondrop=\"drop(event)\"</code> ו-<code>ondragover=\"allowDrop(event)\"</code>.<br>2. יישום מלא לא בהכרח קיים.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 14: שינוי אתר (Site Select)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>14.1</td>\n<td>משתמש בוחר אתר חדש ב-<code>&lt;select&gt;</code>.</td>\n<td>1. פונקציה <code>select_site_id(ele)</code> מחלצת <code>asite=val</code> ומפנה ל-URL חדש.<br>2. <code>$_CURRENT_USER->active_site()</code> מעודכן, הטבלה נבנית לאתר החדש.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 15: סובב תצוגה (toggleFlip)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>15.1</td>\n<td>לוחץ \"סובב תצוגה\".</td>\n<td>1. <code>toggleFlip()</code> מוסיף/מסיר מחלקה <code>flipped</code> ל-<code>.atfusa</code>.<br>2. ההתאמות ב-<code>width/height</code> של האלמנטים נעשות ב-JS.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 16: מצב \"רחב\" (Wide) לעומת \"רגיל\"",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>16.1</td>\n<td>בוחר \"רחב\" או חוזר ל\"רגיל\".</td>\n<td>1. <code>$('.atfusa').addClass('wide')</code> או הסרה.<br>2. שמירת <code>wide=1</code> ב-storage / session.</td>\n</tr>\n</tbody>\n</table>"
+        },
+        {
+          "title": "תרחיש 17: גרירה בעזרת העכבר לגלילה (Drag to scroll)",
+          "content": "<table>\n<thead>\n<tr>\n<th>שלב</th>\n<th>צד המשתמש</th>\n<th>צד הקוד</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>17.1</td>\n<td>המשתמש לוחץ וגורר ברחבי הטבלה כדי לגלול.</td>\n<td>1. <code>mousedown</code> שומר מיקום, <code>mousemove</code> מחשב <code>dx</code>/<code>dy</code>.<br>2. <code>scrollLeft</code> ו-<code>scrollTop</code> מתעדכנים.</td>\n</tr>\n<tr>\n<td>17.2</td>\n<td>משחרר העכבר.</td>\n<td>1. <code>mouseup</code> מסיר את <code>mousemove</code>.<br>2. בודק אם היתה גרירה או קליק (ע\"י משתנה <code>dragging</code>).</td>\n</tr>\n</tbody>\n</table>"
         }
       ]
     },
     {
       "title": "קבצים שנבדקו לצורך absolute_calendar",
-      "content": "<ul>\n<li><code>absolute_calendar.php</code> – זהו הקובץ היחיד שסופק במלואו.</li>\n</ul>"
+      "content": "<ul>\n<li><code>absolute_calendar.php</code> – הקובץ הראשי (נסרק במלואו).</li>\n<li><code>page7.json</code> – הדוקומנטציה המקורית שסופקה.</li>\n<li><code>ajax_daily_remarks.php</code> – משמש לטיפול בהערות יומיות (נסרק במלואו).</li>\n</ul>"
     },
     {
       "title": "קבצים חסרים להשלמת חלק מהתרחישים",
-      "content": "<ul>\n<li><code>ajax_daily_remarks.php</code> – משמש לטיפול בהערות יומן (daily remarks).</li>\n<li>קובצי פונקציות/הרשאות כגון <code>auth.php</code> / <code>UserUtilsNew.php</code> / <code>functions.php</code> (ייתכן ומכילים את המימוש ל־<code>udb::...</code> או <code>typemap</code>).</li>\n<li><code>$domain_icon</code> – משתנה שאינו מוגדר כאן, כנראה מקובץ נוסף.</li>\n</ul>"
+      "content": "<ul>\n<li><code>ajax_tfusa_view.php</code> – לא סופק במלואו (מוזכר בקוד).</li>\n<li>קובץ המכיל את המימוש של <code>udb::...</code> (לדוגמה <code>UserUtilsNew.php</code>), לא סופק.</li>\n<li>קבצים/הגדרות עבור <code>$domain_icon</code> ועוד.</li>\n</ul>"
     },
     {
       "title": "סיכום (absolute_calendar)",
-      "content": "<ul>\n<li><strong>absolute_calendar.php</strong> כולל את הטעינה והצגת היומן (משמרות, מטפלים, חדרים), בהתאם ל־<code>type</code>/<code>viewtype</code>/<code>weekly</code>/<code>workers</code>/<code>date</code>.</li>\n<li>הקוד תומך בתצוגות יום, שבוע, חודש (כולל חיתוך הזמנות מעבר לגבולות התאריך) ומאפשר גרירה/גלילה.</li>\n<li>קיימת אפשרות לניהול הערות יומיות <code>(daily remarks)</code> דרך <code>ajax_daily_remarks.php</code>.</li>\n<li>למשתמשים רגילים מוצגת תצוגה חלקית, בעוד מנהל (<code>adminAccess=1</code>) מקבל גישה לעריכת משמרות והערות.</li>\n</ul>"
+      "content": "<ul>\n<li><strong>absolute_calendar.php</strong> אחראי על טעינת יומן משמרות/מטפלים/חדרים (כולל עובדים), תצוגות גמישות (יום/שבוע/חודש/רשימה), חיתוך אירועים, והערות יומיות.</li>\n<li>הקוד מטפל בהרשאות משתמש רגיל/מנהל, כולל אפשרות \"נעילת יום\" ומטפלים פיקטיביים לחסימות.</li>\n<li>יש הגדרות hours/holidays (sites_weekly_hours, sites_periods, not_holidays) להתאמת שעות פעילות וחופשות.</li>\n<li>עריכת שבוע, Drag & Drop וקינפוג נוסף דורשים קבצים חיצוניים נוספים (כגון ajax_tfusa_view.php ו-udb::...).</li>\n</ul>"
     }
   ]
 }
