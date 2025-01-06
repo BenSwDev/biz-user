@@ -1,120 +1,121 @@
-/* בסיסי */
+/* Basic reset */
 * {
   box-sizing: border-box;
-}
-body {
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
-  direction: rtl;
-  background-color: #f0f0f0;
-  color: #333;
 }
+
+body {
+  font-family: sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
+  line-height: 1.6;
+  direction: rtl; /* Important for Hebrew + RTL */
+  text-align: right; /* Makes text align to the right by default */
+}
+
 .page-header {
-  background: #f8f8f8;
-  border-bottom: 2px solid #ccc;
-  padding: 10px 20px;
+  background-color: #303f9f;
+  color: #fff;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
+
 .page-header h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.4rem;
 }
 
+.edit-buttons {
+  margin-top: 1rem;
+}
+
+.edit-buttons button {
+  background: #eee;
+  border: 1px solid #ccc;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
+.edit-buttons button:hover {
+  background-color: #ccc;
+}
+
+/* Layout container */
 .container {
   display: flex;
-  min-height: 100vh;
+  /* For a right-side sidebar, keep row-reverse.
+     For a left-side sidebar, remove flex-direction: row-reverse. */
+  flex-direction: row-reverse;
+  min-height: 80vh;
 }
 
-/* תפריט צדדי */
 .sidebar {
-  width: 240px;
-  background: #2d3e50;
-  color: #fff;
-  padding: 20px;
-  flex-shrink: 0;
+  background-color: #e9ecef;
+  width: 250px;
+  padding: 1rem;
+  border-left: 1px solid #ccc;
 }
+
 .sidebar h2 {
-  font-size: 20px;
-  margin-bottom: 10px;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
 }
+
 .sidebar ul {
   list-style: none;
-  margin: 0;
-  padding: 0;
 }
+
 .sidebar li {
-  margin-bottom: 5px;
-  position: relative;
+  margin-bottom: 0.5rem;
 }
+
 .sidebar a {
-  display: block;
-  padding: 8px 12px;
-  color: #fff;
-  border-radius: 4px;
-  transition: background 0.3s;
   text-decoration: none;
+  color: #007bff;
+  font-size: 0.95rem;
 }
+
 .sidebar a:hover {
-  background: #1f2a38;
+  text-decoration: underline;
 }
 
-/* submenu */
-.submenu {
-  margin-top: 5px;
-  margin-right: 20px;
-  padding-left: 15px;
-  border-left: 2px solid #aaa;
-}
-.submenu li {
-  margin-bottom: 0; /* או מרווח קטן יותר */
-}
-.submenu a {
-  background: #3a4b60;
-  font-size: 14px;
-}
-.submenu a:hover {
-  background: #324254;
-}
-
-/* תוכן */
 .content {
-  flex-grow: 1;
-  background: #fff;
-  padding: 20px 30px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-#page-content h1 {
-  font-size: 24px;
-  margin: 0 0 1rem;
-  border-bottom: 2px solid #ccc;
-  padding-bottom: 0.3rem;
+  flex: 1;
+  padding: 1rem;
+  min-width: 0;
 }
 
-/* לכל section-block */
-.section-block {
-  margin-bottom: 2rem;
-}
-.section-block h2 {
-  font-size: 20px;
-  margin: 1rem 0 0.5rem;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 0.3rem;
-}
-
-/* טבלאות */
-table {
-  border-collapse: collapse;
-  width: 100%;
+/* Rendered content area */
+#page-content {
+  background-color: #fff;
+  padding: 1rem;
   margin-bottom: 1rem;
-  direction: rtl; /* כדי שהכיוון הכללי של הטבלה יהיה מימין לשמאל */
-  text-align: right; /* טקסט מיושר לימין */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: right; /* RTL-friendly */
 }
-table th,
-table td {
+
+/* Basic table styling for rendered Markdown */
+#page-content table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  width: 100%;
+  direction: rtl; /* ensure the table is also RTL */
+}
+
+#page-content th,
+#page-content td {
   border: 1px solid #ccc;
   padding: 0.5rem;
+  text-align: right;
 }
-table th {
-  background-color: #f8f8f8;
+
+/* Toast UI Editor in RTL:
+   The editor itself might handle some aspects of RTL, but this helps override */
+.toasted-editor-section * {
+  direction: rtl;
+  text-align: right;
 }
