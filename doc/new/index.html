@@ -2,12 +2,26 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <title>BizOnline - Documentation for Developers and testing infrastructure</title>
+    <title>BizOnline - Documentation for Developers and Testing Infrastructure</title>
+    <!-- Our custom CSS -->
     <link rel="stylesheet" href="styles.css" />
+
+    <!-- Toast UI Editor (CSS + JS).
+         This library provides a nice Markdown WYSIWYG editor with table support.
+         You can also use the "editor-all" bundle if you want UML/Chart plugins, etc. -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
 </head>
 <body>
 <header class="page-header">
-    <h1>BizOnline - Documentation for Developers and testing infrastructure</h1>
+    <h1>BizOnline - Documentation for Developers and Testing Infrastructure</h1>
+
+    <!-- Editing buttons -->
+    <div class="edit-buttons">
+        <button id="editToggleBtn">ערוך תוכן</button>
+        <button id="saveChangesBtn" style="display: none;">שמור</button>
+        <button id="revertChangesBtn" style="display: none;">בטל שינויים מקומיים</button>
+    </div>
 </header>
 
 <div class="container">
@@ -15,52 +29,51 @@
     <nav class="sidebar" id="main-sidebar">
         <h2>ניווט</h2>
         <ul>
-            <!-- קישור ל-intro -->
             <li><a href="#" data-page="intro">הקדמה כללית (intro)</a></li>
-
-            <!-- עמודים 1..29 -->
             <li><a href="#" data-page="page1">1. מסך ראשי (home)</a></li>
+            <li><a href="#" data-page="page1-2">1.2 מסך ראשי (userType=2)</a></li>
             <li><a href="#" data-page="page2">2. בדיקת כרטיס אשראי (ccard)</a></li>
             <li><a href="#" data-page="page3">3. הצטרפות לסליקה (cc)</a></li>
             <li><a href="#" data-page="page4">4. פירוט עסקאות (yaadTrans)</a></li>
             <li><a href="#" data-page="page5">5. ניהול גיפטקארד (giftcards)</a></li>
+            <li><a href="#" data-page="page5-2">5.2 ניהול גיפטקארד (userType=2)</a></li>
             <li><a href="#" data-page="page6">6. ניהול מנויים (subscriptions)</a></li>
             <li><a href="#" data-page="page7">7. יומן תפוסה ספא (absolute_calendar)</a></li>
+            <li><a href="#" data-page="page7-2">7.2 יומן תפוסה ספא (userType=2)</a></li>
             <li><a href="#" data-page="page8">8. פופ אפ - יצירת הזמנה ספא (create_order)</a></li>
-            <li><a href="#" data-page="page9-1">9.1 הגדרות ספא (treatments)</a></li>
+            <li><a href="#" data-page="page8-2">8.2 יצירת הזמנה ספא (userType=2)</a></li>
+            <li><a href="#" data-page="page9">9. הגדרות ספא (treatments)</a></li>
             <li><a href="#" data-page="page9-2">9.2 הגדרות ספא (treaters)</a></li>
             <li><a href="#" data-page="page10">10. דוחות (report_manage)</a></li>
+            <li><a href="#" data-page="page10-2">10.2 דוחות (userType=2)</a></li>
             <li><a href="#" data-page="page11">11. הצהרות בריאות (healthStatements)</a></li>
+            <li><a href="#" data-page="page11-2">11.2 הצהרות בריאות (userType=2)</a></li>
             <li><a href="#" data-page="page12">12. יומן זמינות והזמנות (calendar_ver2)</a></li>
-            <li><a href="#" data-page="page13">13. יצירת הזמנה (וריאציה)</a></li>
-            <li><a href="#" data-page="page14">14. דוחות (userType=2)</a></li>
-            <li><a href="#" data-page="page15">15. לקוחות (clients)</a></li>
-            <li><a href="#" data-page="page16">16. חיפוש הזמנות (orders-list)</a></li>
-            <li><a href="#" data-page="page17">17. מחירים (prices)</a></li>
-            <li><a href="#" data-page="page18">18. הגדרות (agreements)</a></li>
-            <li><a href="#" data-page="page19">19. חוות דעת (reviews)</a></li>
-            <li><a href="#" data-page="page20">20. סטטיסטיקות (stats)</a></li>
-            <li><a href="#" data-page="page21">21. עדכון פנויים (vilasavail)</a></li>
-            <li><a href="#" data-page="page22">22. מסך ראשי (userType=2)</a></li>
-            <li><a href="#" data-page="page23">23. יומן תפוסה ספא (userType=2)</a></li>
-            <li><a href="#" data-page="page24">24. יצירת הזמנה ספא (userType=2)</a></li>
-            <li><a href="#" data-page="page25">25. ניהול גיפטקארד (userType=2)</a></li>
-            <li><a href="#" data-page="page26">26. הצהרות בריאות (userType=2)</a></li>
-            <li><a href="#" data-page="page27">27. חיפוש הזמנות (userType=2)</a></li>
-            <li><a href="#" data-page="page28">28. חוות דעת (userType=2)</a></li>
+            <li><a href="#" data-page="page13">13. יצירת הזמנה (orders.php)</a></li>
+            <li><a href="#" data-page="page14">14. לקוחות (clients)</a></li>
+            <li><a href="#" data-page="page15">15. מחירים (prices)</a></li>
+            <li><a href="#" data-page="page16">16. הגדרות (agreements)</a></li>
+            <li><a href="#" data-page="page17">17. חוות דעת (reviews)</a></li>
+            <li><a href="#" data-page="page17-2">17.2 חוות דעת (userType=2)</a></li>
+            <li><a href="#" data-page="page18">18. סטטיסטיקות (stats)</a></li>
+            <li><a href="#" data-page="page19">19. עדכון פנויים (vilasavail)</a></li>
         </ul>
     </nav>
 
     <!-- MAIN CONTENT -->
-    <div class="content" id="main-content">
-        <!-- כאן נטען התוכן הדינמי מה-JSON -->
+    <div class="content">
+        <!-- Read-only rendered content goes here -->
         <div id="page-content">
             <h1>ברוך הבא</h1>
             <p>בחר עמוד מתוך התפריט משמאל כדי לטעון את תוכנו.</p>
         </div>
+
+        <!-- The Toast UI Editor container (hidden by default in "read" mode) -->
+        <div id="editorContainer" style="display: none;"></div>
     </div>
 </div>
 
+<!-- Our main JS logic -->
 <script src="script.js"></script>
 </body>
 </html>
