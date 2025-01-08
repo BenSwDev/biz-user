@@ -1,6 +1,4 @@
-## 1. המסמך המבוקש (בפורמט MarkDown)
 
-```md
 # 1. הקדמה
 הקובץ שמצוי ברשותנו, `cms/classes/class.reviewcomment.php`, מכיל מחלקה בשם `reviewcomment` שתפקידה לשלוח אימייל והודעת SMS למשתמש כאשר מתקבלת תגובה לחוות דעת (Review) שהוא כתב באתר. המתודה המרכזית בקובץ היא `sendEmailSmsforClientsNotifyAboutReviewComment($data)`, אשר מקבלת מערך מידע (`$data`) ושולחת על בסיסו הודעה למשתמש (אימייל/SMS) על מנת לעדכן אותו לגבי תגובה שנכתבה לחוות דעתו.
 
