@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveChangesBtn = document.getElementById('saveChangesBtn');
   const revertChangesBtn = document.getElementById('revertChangesBtn');
 
+  // For showing the selected page title under main header
+  const selectedPageTitle = document.getElementById('selected-page-title');
+
   // 1) Initialize the Toast UI Editor in hidden mode:
   editor = new toastui.Editor({
     el: editorContainer,
@@ -24,8 +27,16 @@ document.addEventListener('DOMContentLoaded', () => {
   editor.hide(); // Hide by default (in read mode)
 
   // 2) Function to load a page’s .md content
-  async function loadPage(pageName) {
+  async function loadPage(pageName, linkElement = null) {
     currentPage = pageName;
+
+    // If a link element was passed, highlight it and un-highlight others
+    if (linkElement) {
+      sidebarLinks.forEach(link => link.classList.remove('active'));
+      linkElement.classList.add('active');
+      // Use the link's text as the sub-title in the header
+      selectedPageTitle.textContent = linkElement.textContent.trim();
+    }
 
     // Check localStorage first
     const localEdits = localStorage.getItem('page-' + pageName);
@@ -134,7 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
     link.addEventListener('click', event => {
       event.preventDefault();
       const pageName = link.getAttribute('data-page');
-      loadPage(pageName);
+      // Pass link as a second argument so we can highlight it & update the sub-title
+      loadPage(pageName, link);
     });
   });
 });
